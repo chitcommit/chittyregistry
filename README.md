@@ -60,7 +60,24 @@ This is the **orchestrator control center** - you can:
 - 🔵 **Storage**: Data/asset management
 - 🔒 **Archive**: Protected/restricted access
 
-### Quick Navigation
+### 🎮 Interactive Navigation
+
+**Launch the interactive project navigator:**
+
+```bash
+# Interactive menu with all projects
+./navigate.sh
+
+# Or use the project command
+source chittychat/project-navigator.sh
+project                    # Interactive menu
+project nav                # Same as above
+project list               # Show all projects
+project 1                  # Launch ChittyChat directly
+project chittyrouter       # Launch by name
+```
+
+**Quick Navigation (Traditional):**
 
 ```bash
 # Go to main platform
