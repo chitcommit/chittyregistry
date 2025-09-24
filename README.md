@@ -13,18 +13,52 @@ This is the **orchestrator control center** - you can:
 
 ---
 
-## 🎯 Available Project Workspaces
+## 🎯 ChittyOS Project Portfolio
 
-### Active Project Directories
+### 🌐 Core Platform Services
+| Project | Status | Purpose | Quick Access |
+|---------|--------|---------|--------------|
+| **ChittyChat** | 🟢 Active | Unified platform & worker consolidation | `cd chittychat/ && npm run dev` |
+| **ChittyRouter** | 🟢 Active | AI gateway & intelligent routing | `cd chittyrouter/ && npm start` |
+| **ChittySchema** | 🟢 Active | Universal data framework | `cd chittyschema/ && npm run dev` |
+| **ChittyRegistry** | 🟡 Service | Service discovery & management | `cd chittyregistry/ && ./start.sh` |
 
-| Project | Purpose | Path |
-|---------|---------|------|
-| **ChittyChat** | Main platform & unified worker | `→ chittychat/` |
-| **ChittyRouter** | AI gateway & intelligent routing | `→ chittyrouter/` |
-| **ChittySchema** | Data framework & Notion sync | `→ chittyschema/` |
-| **ChittyDashboard** | Command center & monitoring | `→ chittydashboard/` |
-| **ChittyCases** | Legal case management | `→ chittycases/` |
-| **ChittyID** | Identity management system | `→ chittyid/` |
+### 🛠️ Management & Tools
+| Project | Status | Purpose | Quick Access |
+|---------|--------|---------|--------------|
+| **ChittyDashboard** | 🟢 Active | Command center & monitoring | `cd chittydashboard/ && npm run serve` |
+| **ChittyID** | 🟢 Core | Identity & blockchain system | `cd chittyid/ && ./mint-id.sh` |
+| **ChittyCheck** | 🟢 Tool | Compliance & validation | `./chittycheck/chittycheck-enhanced.sh` |
+| **ChittyCleaner** | 🟡 Tool | System cleanup utilities | `./chittycleaner/cleanup-system.sh` |
+
+### 📊 Domain-Specific Applications
+| Project | Status | Purpose | Quick Access |
+|---------|--------|---------|--------------|
+| **ChittyCases** | 🟢 Active | Legal case management | `cd chittycases/ && python app.py` |
+| **ChittyBrand** | 🟡 Service | Brand compliance & assets | `cd chittybrand/ && ./brand-cli-tool.js` |
+| **ChittyAuth** | 🟡 Service | Authentication & access control | `cd chittyauth/ && npm run auth-server` |
+| **ChittyAssets** | 🔵 Storage | Digital asset management | `cd chittyassets/ && ./asset-manager.sh` |
+
+### 🧪 Development & Integration
+| Project | Status | Purpose | Quick Access |
+|---------|--------|---------|--------------|
+| **ChittyCLI** | 🟢 Tool | Unified command interface | `cd chittycli/ && npm run cli` |
+| **ChittyOS** | 🟡 Meta | Operating system integration | `cd chittyos/ && ./system-init.sh` |
+| **LaunchChitty** | 🔵 Tool | Deployment orchestration | `cd launch_chitty/ && ./deploy.sh` |
+
+### 📁 Data & Archives
+| Project | Status | Purpose | Quick Access |
+|---------|--------|---------|--------------|
+| **ChittyOS-Data** | 🔒 Archive | System data & backups | *Restricted Access* |
+| **ChittyChat-Data** | 🔒 Archive | Platform data exports | *Restricted Access* |
+| **Legal/** | 🟡 Active | Legal documents & cases | `cd legal/ && ls -la` |
+| **System/** | 🟡 Tool | System utilities & scripts | `cd system/ && ./status.sh` |
+
+### Status Legend
+- 🟢 **Active**: Primary development/production
+- 🟡 **Service**: Supporting service/periodic use
+- 🔵 **Storage**: Data/asset management
+- 🔒 **Archive**: Protected/restricted access
 
 ### Quick Navigation
 
