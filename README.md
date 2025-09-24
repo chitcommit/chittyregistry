@@ -1,16 +1,21 @@
 # 🚦 ChittyOS Orchestrator Hub
 
-## ⚠️ IMPORTANT: DO NOT SAVE FILES HERE
+## 🎛️ ChittyOS Orchestrator Functions
 
-This is the **orchestrator landing zone** - a navigation hub for the ChittyOS ecosystem.
+This is the **orchestrator control center** - you can:
 
-**You should NOT be creating new projects or files in this directory!**
+✅ **Initialize new projects** (with proper access)
+✅ **Edit existing projects** across the ecosystem
+✅ **Configure/reconfigure** multiple projects
+✅ **Cross-project operations** and coordination
+
+**Note**: Individual project files should be saved in their respective directories
 
 ---
 
-## 🎯 Where Should You Go Instead?
+## 🎯 Available Project Workspaces
 
-### Active Project Workspaces
+### Active Project Directories
 
 | Project | Purpose | Path |
 |---------|---------|------|
@@ -68,6 +73,10 @@ source ./chittychat/project-orchestrator.sh
 
 # Deploy services
 ./chittychat/slash-commands-extended.sh deploy
+
+# Cleanup & maintenance
+./chittycleaner/cleanup-system.sh
+./system/project-health-audit.sh
 ```
 
 ### Service Registry
@@ -105,8 +114,33 @@ ChittyOS Orchestrator Hub (YOU ARE HERE)
 
 ## ⚡ Quick Start
 
-### 1. Choose Your Destination
-Don't work here! Navigate to the appropriate project:
+### 1. Orchestrator Operations
+From this hub, you can:
+
+```bash
+# Initialize new project with ChittyID
+./chittyid/mint-new-project.sh PROJECT_NAME
+
+# Cross-project configuration
+./system/configure-multi-project.sh
+
+# Access control management
+./system/manage-access-rights.sh
+
+# Project lifecycle management
+./system/archive-project.sh PROJECT_NAME
+./system/cleanup-inactive-projects.sh
+./system/restore-archived-project.sh PROJECT_NAME
+
+# Project consolidation & forking
+./system/merge-projects.sh PROJECT_A PROJECT_B
+./system/consolidate-similar-projects.sh
+./system/fork-project.sh SOURCE_PROJECT NEW_PROJECT
+./system/split-project.sh LARGE_PROJECT COMPONENT_NAME
+```
+
+### 2. Navigate to Specific Projects
+For focused development:
 
 ```bash
 # For platform development
@@ -119,14 +153,14 @@ cd chittyrouter/
 cd chittyschema/
 ```
 
-### 2. Run Health Check
+### 3. Run Health Check
 Before starting work, validate the system:
 
 ```bash
 ./chittycheck/chittycheck-enhanced.sh
 ```
 
-### 3. Start Development
+### 4. Start Development
 Each project has its own README with specific instructions:
 
 ```bash
