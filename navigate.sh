@@ -1,7 +1,14 @@
-#!/bin/bash
+#!/opt/homebrew/bin/bash
 
 # ChittyOS Interactive Project Navigator
 # Usage: ./navigate.sh or source navigate.sh && nav
+
+# Check for bash 4.0+ (associative arrays)
+if [ "${BASH_VERSION%%.*}" -lt 4 ]; then
+    echo "❌ This script requires Bash 4.0 or higher for associative arrays"
+    echo "💡 Try: brew install bash (on macOS)"
+    exit 1
+fi
 
 set -e
 
