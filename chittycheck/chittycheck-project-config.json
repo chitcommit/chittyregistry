@@ -1,0 +1,120 @@
+{
+  "name": "ChittyCheck Project Configuration",
+  "version": "1.0.0",
+  "chittyos": {
+    "framework_version": "1.0.1",
+    "services": {
+      "chittyregistry": {
+        "enabled": true,
+        "endpoint": "https://registry.chitty.cc"
+      },
+      "chittycanon": { "enabled": true, "endpoint": "https://canon.chitty.cc" },
+      "chittychat": { "enabled": true, "endpoint": "https://chat.chitty.cc" },
+      "chittyverify": {
+        "enabled": true,
+        "endpoint": "https://verify.chitty.cc"
+      },
+      "chittycertify": {
+        "enabled": true,
+        "endpoint": "https://cert.chitty.cc"
+      },
+      "chittycheck": {
+        "enabled": true,
+        "endpoint": "local-validation-service"
+      },
+      "chittyauth": { "enabled": true, "endpoint": "https://auth.chitty.cc" },
+      "chittyschema": {
+        "enabled": true,
+        "endpoint": "https://schema.chitty.cc"
+      },
+      "chittysync": { "enabled": true, "endpoint": "https://sync.chitty.cc" },
+      "chittybeacon": {
+        "enabled": true,
+        "endpoint": "https://beacon.chitty.cc"
+      },
+      "chittycases": { "enabled": true, "endpoint": "https://cases.chitty.cc" },
+      "chittygov": { "enabled": true, "endpoint": "https://gov.chitty.cc" },
+      "chittyfinance": {
+        "enabled": true,
+        "endpoint": "https://finance.chitty.cc"
+      },
+      "chittychronical": {
+        "enabled": true,
+        "endpoint": "https://chronical.chitty.cc"
+      },
+      "chittyledger": {
+        "enabled": true,
+        "endpoint": "https://ledger.chitty.cc"
+      },
+      "chittychain": { "enabled": true, "endpoint": "https://chain.chitty.cc" },
+      "chittyguardian": {
+        "enabled": true,
+        "endpoint": "https://guardian.chitty.cc"
+      },
+      "chittybooks": { "enabled": true, "endpoint": "https://books.chitty.cc" }
+    }
+  },
+  "project_management": {
+    "archive": {
+      "enabled": true,
+      "path": "~/.chittyos/archive",
+      "retention_days": 365,
+      "compression": "gzip",
+      "exclude_patterns": [
+        "node_modules/",
+        ".git/",
+        "dist/",
+        "build/",
+        "*.log",
+        ".DS_Store",
+        "*.tmp"
+      ]
+    },
+    "integration": {
+      "claude_projects": {
+        "enabled": true,
+        "config_path": ".claude/project.json",
+        "auto_init": true
+      },
+      "git_worktree": {
+        "enabled": true,
+        "auto_create": true,
+        "branch_prefix": "chitty-"
+      },
+      "evidence_collection": {
+        "enabled": true,
+        "path": "~/.chittychat/evidence",
+        "auto_backup": true
+      }
+    }
+  },
+  "compliance": {
+    "chittyid": {
+      "required": true,
+      "token_required": true,
+      "local_generation_forbidden": true
+    },
+    "security": {
+      "penetration_testing": {
+        "frequency_days": 90,
+        "auto_schedule": true
+      },
+      "code_review": {
+        "ai_enabled": true,
+        "auto_fix": true
+      }
+    }
+  },
+  "interactive": {
+    "auto_fix": {
+      "enabled": true,
+      "prompt_user": true,
+      "safe_operations_only": true
+    },
+    "project_init": {
+      "claude_context": true,
+      "chittyos_templates": true,
+      "git_hooks": true
+    }
+  }
+}
