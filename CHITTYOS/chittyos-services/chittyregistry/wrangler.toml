@@ -1,0 +1,36 @@
+name = "chittyregistry"
+main = "src/universal-registry-worker.js"
+compatibility_date = "2024-01-01"
+account_id = "84f0f32886f1d6196380fe6cbe9656a8"
+
+[env.staging]
+name = "chittyregistry-staging"
+main = "src/universal-registry-worker.js"
+vars = { SERVICE_NAME = "chittyregistry-universal-staging", SERVICE_VERSION = "2.0.0-staging", CHITTYOS_ENVIRONMENT = "staging" }
+
+[env.production]
+name = "chittyregistry-production"
+main = "src/universal-registry-worker.js"
+
+[[routes]]
+pattern = "registry.chitty.cc/*"
+zone_name = "chitty.cc"
+
+[[routes]]
+pattern = "chitty.cc/registry/*"
+zone_name = "chitty.cc"
+
+[vars]
+SERVICE_NAME = "chittyregistry-universal"
+SERVICE_VERSION = "2.0.0"
+CHITTYOS_ENVIRONMENT = "production"
+REGISTRY_BASE_PATH = "/Users/nb/.claude/projects/-"
+CHITTYCHAT_INTEGRATION = "enabled"
+
+[[kv_namespaces]]
+binding = "REGISTRY_CACHE"
+id = "64fff42296334991bb4308f3482fdd4d"
+
+[[kv_namespaces]]
+binding = "REGISTRY_STORE"
+id = "8d68622f5cc742a3a98d7ee3b09f903d"
