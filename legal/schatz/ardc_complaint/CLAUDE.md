@@ -16,8 +16,8 @@ ARDC (Attorney Registration and Disciplinary Commission) complaint evidence proc
 # Run Python evidence processor for database management
 python3 schatz_evidence_processor.py
 
-# Generate evidence report from database
-sqlite3 schatz_evidence.db "SELECT * FROM evidence_ledger WHERE schatz_relevance_score >= 5;"
+# Generate evidence report from PostgreSQL database
+psql $NEON_CONNECTION_STRING -c "SELECT chitty_id, filename, schatz_relevance_score FROM evidence_ledger WHERE schatz_relevance_score >= 5 ORDER BY schatz_relevance_score DESC;"
 ```
 
 ### ChittyOS Integration (EXECUTE IMMEDIATELY)
@@ -33,9 +33,10 @@ sqlite3 schatz_evidence.db "SELECT * FROM evidence_ledger WHERE schatz_relevance
 The system consists of three primary components working together to process legal evidence:
 
 ### 1. Evidence Processing Pipeline
-- **schatz_evidence_processor.py**: SQLite-based evidence ledger that tracks all documents with ChittyID integration
+- **schatz_evidence_processor.py**: PostgreSQL-based evidence ledger with Neon database integration and ChittyID service
 - **schatz_intake_processor.sh**: Bash script that scans Google Drive locations for Schatz-related documents
-- **Database Schema**: Two tables - `evidence_ledger` for document tracking and `schatz_timeline` for case chronology
+- **Database Schema**: Two PostgreSQL tables - `evidence_ledger` for document tracking and `schatz_timeline` for case chronology
+- **Connection Pooling**: ThreadedConnectionPool for high-performance database operations
 
 ### 2. Document Classification System
 Documents are classified and scored based on:
@@ -61,7 +62,7 @@ The system scans these Google Drive locations:
 ### Primary Evidence
 - **EXHIBIT_K-1_DECEMBER_2_2024_EMAIL**: Key email showing attorney negligence (hard mint required)
 - **ARDC_COMPLAINT_DRAFT.html**: Draft complaint with specific rule violations documented
-- **schatz_evidence.db**: SQLite database containing all processed evidence
+- **PostgreSQL Database**: Neon-hosted database containing all processed evidence with enterprise-grade reliability
 
 ### Manifests
 - **SCHATZ_MINTING_MANIFEST.json**: ChittyID minting strategy for evidence preservation
@@ -72,13 +73,14 @@ The system scans these Google Drive locations:
 
 ### Initial Setup
 ```bash
-# 1. Configure ChittyID token (REQUIRED)
+# 1. Configure required environment variables
 export CHITTY_ID_TOKEN=your_token_here
+export NEON_CONNECTION_STRING=postgresql://user:pass@host/database
 
 # 2. Validate environment
 /chittycheck
 
-# 3. Initialize evidence database
+# 3. Initialize evidence database (creates tables if not exists)
 python3 schatz_evidence_processor.py
 ```
 
@@ -96,8 +98,11 @@ sqlite3 schatz_evidence.db < generate_report.sql
 
 ### Evidence Verification
 ```bash
-# Check evidence integrity
-sqlite3 schatz_evidence.db "SELECT chitty_id, file_hash, schatz_relevance_score FROM evidence_ledger ORDER BY schatz_relevance_score DESC;"
+# Check evidence integrity in PostgreSQL
+psql $NEON_CONNECTION_STRING -c "SELECT chitty_id, file_hash, schatz_relevance_score FROM evidence_ledger ORDER BY schatz_relevance_score DESC LIMIT 10;"
+
+# Verify database connection
+psql $NEON_CONNECTION_STRING -c "SELECT COUNT(*) as total_evidence FROM evidence_ledger;"
 
 # Verify ChittyID minting status
 curl -H "Authorization: Bearer $CHITTY_ID_TOKEN" https://id.chitty.cc/v1/verify
@@ -117,5 +122,7 @@ The system tracks Illinois Rules of Professional Conduct violations:
 **CRITICAL**: All evidence IDs MUST be minted from https://id.chitty.cc
 - NO local ID generation allowed
 - Token required: `CHITTY_ID_TOKEN` environment variable
+- Database required: `NEON_CONNECTION_STRING` environment variable
 - Format: `CHITTY-{ENTITY}-{SEQUENCE}-{CHECKSUM}`
-- Entities: EMAIL, EVNT, FACT, EVIDENCE
+- Entities: EVIDENCE, EMAIL, EVNT, FACT
+- PostgreSQL with connection pooling for enterprise reliability

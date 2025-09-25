@@ -7,62 +7,91 @@ ChittyOS Universal Intake Integration
 import os
 import hashlib
 import json
-import sqlite3
+import psycopg2
+import psycopg2.extras
+import psycopg2.pool
 import requests
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
+from contextlib import contextmanager
 
 class SchatzEvidenceProcessor:
-    def __init__(self, db_path="schatz_evidence.db"):
-        self.db_path = db_path
+    def __init__(self, connection_string=None, pool_size=5):
+        self.connection_string = connection_string or os.environ.get('NEON_CONNECTION_STRING')
+        if not self.connection_string:
+            raise ValueError("NEON_CONNECTION_STRING environment variable not set")
+
+        # Initialize connection pool for better performance
+        try:
+            self.connection_pool = psycopg2.pool.ThreadedConnectionPool(
+                1, pool_size, self.connection_string
+            )
+        except psycopg2.Error as e:
+            raise RuntimeError(f"Failed to create database connection pool: {e}")
+
         self.init_database()
+
+    @contextmanager
+    def get_db_connection(self):
+        """Get database connection from pool with automatic cleanup"""
+        conn = None
+        try:
+            conn = self.connection_pool.getconn()
+            yield conn
+        except psycopg2.Error as e:
+            if conn:
+                conn.rollback()
+            raise RuntimeError(f"Database operation failed: {e}")
+        finally:
+            if conn:
+                self.connection_pool.putconn(conn)
         
     def init_database(self):
-        """Initialize SQLite evidence database"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
+        """Initialize PostgreSQL evidence database"""
+        with self.get_db_connection() as conn:
+            cursor = conn.cursor()
+
         # Create evidence ledger table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS evidence_ledger (
-                chitty_id TEXT PRIMARY KEY,
+                chitty_id VARCHAR(255) PRIMARY KEY,
                 original_path TEXT NOT NULL,
                 filename TEXT NOT NULL,
-                file_hash TEXT NOT NULL,
-                file_size INTEGER,
-                content_type TEXT,
+                file_hash VARCHAR(64) NOT NULL,
+                file_size BIGINT,
+                content_type VARCHAR(100),
                 created_at TIMESTAMP,
                 modified_at TIMESTAMP,
                 ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 schatz_relevance_score INTEGER,
-                document_type TEXT,
+                document_type VARCHAR(50),
                 email_from TEXT,
                 email_to TEXT,
                 email_subject TEXT,
                 email_date TEXT,
                 tags TEXT,
                 summary TEXT,
-                legal_privilege TEXT,
-                evidence_category TEXT
+                legal_privilege VARCHAR(100),
+                evidence_category VARCHAR(100)
             )
         ''')
-        
+
         # Create Schatz case timeline table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS schatz_timeline (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 date TEXT,
-                event_type TEXT,
+                event_type VARCHAR(100),
                 description TEXT,
-                evidence_id TEXT,
+                evidence_id VARCHAR(255),
                 document_reference TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (evidence_id) REFERENCES evidence_ledger (chitty_id)
             )
         ''')
-        
-        conn.commit()
-        conn.close()
+
+            conn.commit()
     
     def generate_chitty_id(self, filepath):
         """Request ChittyOS universal ID from central service"""
@@ -194,15 +223,28 @@ class SchatzEvidenceProcessor:
             relevance_score = self.assess_schatz_relevance(filepath, content_sample)
             
             # Insert into database
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
+            with self.get_db_connection() as conn:
+                cursor = conn.cursor()
             
             cursor.execute('''
-                INSERT OR REPLACE INTO evidence_ledger 
+                INSERT INTO evidence_ledger
                 (chitty_id, original_path, filename, file_hash, file_size, content_type,
                  created_at, modified_at, schatz_relevance_score, document_type,
                  email_from, email_to, email_subject, email_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (chitty_id) DO UPDATE SET
+                    original_path = EXCLUDED.original_path,
+                    filename = EXCLUDED.filename,
+                    file_hash = EXCLUDED.file_hash,
+                    file_size = EXCLUDED.file_size,
+                    content_type = EXCLUDED.content_type,
+                    modified_at = EXCLUDED.modified_at,
+                    schatz_relevance_score = EXCLUDED.schatz_relevance_score,
+                    document_type = EXCLUDED.document_type,
+                    email_from = EXCLUDED.email_from,
+                    email_to = EXCLUDED.email_to,
+                    email_subject = EXCLUDED.email_subject,
+                    email_date = EXCLUDED.email_date
             ''', (
                 chitty_id,
                 filepath,
@@ -219,9 +261,8 @@ class SchatzEvidenceProcessor:
                 email_metadata.get('subject', ''),
                 email_metadata.get('date', '')
             ))
-            
-            conn.commit()
-            conn.close()
+
+                conn.commit()
             
             print(f"✓ Processed: {filename} [ChittyID: {chitty_id}] [Relevance: {relevance_score}/10]")
             return chitty_id
@@ -248,8 +289,8 @@ class SchatzEvidenceProcessor:
     
     def generate_report(self):
         """Generate evidence report for ARDC complaint"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with self.get_db_connection() as conn:
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         # Get all Schatz-relevant documents
         cursor.execute('''
@@ -268,22 +309,22 @@ Total Relevant Documents: {len(results)}
 ## HIGH PRIORITY EVIDENCE (Score 8-10)
 """
         
-        high_priority = [r for r in results if r[9] >= 8]  # schatz_relevance_score
+        high_priority = [r for r in results if r['schatz_relevance_score'] >= 8]
         for doc in high_priority:
-            report += f"- **{doc[2]}** (ChittyID: {doc[0]})\n"
-            report += f"  Path: {doc[1]}\n"
-            report += f"  Type: {doc[10]} | Score: {doc[9]}/10\n"
-            if doc[11]:  # email_from
-                report += f"  From: {doc[11]} | To: {doc[12]}\n"
-                report += f"  Subject: {doc[13]}\n"
+            report += f"- **{doc['filename']}** (ChittyID: {doc['chitty_id']})\n"
+            report += f"  Path: {doc['original_path']}\n"
+            report += f"  Type: {doc['document_type']} | Score: {doc['schatz_relevance_score']}/10\n"
+            if doc['email_from']:
+                report += f"  From: {doc['email_from']} | To: {doc['email_to']}\n"
+                report += f"  Subject: {doc['email_subject']}\n"
             report += "\n"
         
         report += "\n## MEDIUM PRIORITY EVIDENCE (Score 5-7)\n"
-        medium_priority = [r for r in results if 5 <= r[9] < 8]
+        medium_priority = [r for r in results if 5 <= r['schatz_relevance_score'] < 8]
         for doc in medium_priority:
-            report += f"- {doc[2]} (Score: {doc[9]}/10)\n"
-        
-        conn.close()
+            report += f"- {doc['filename']} (Score: {doc['schatz_relevance_score']}/10)\n"
+
+        # Connection automatically closed by context manager
         
         # Save report
         report_path = "SCHATZ_EVIDENCE_REPORT.md"
@@ -294,10 +335,15 @@ Total Relevant Documents: {len(results)}
         return report
 
 if __name__ == "__main__":
-    # Ensure ChittyID token is configured
+    # Ensure required environment variables are configured
     if not os.environ.get('CHITTY_ID_TOKEN'):
         print("ERROR: CHITTY_ID_TOKEN environment variable not set")
         print("Please set: export CHITTY_ID_TOKEN=your_token_here")
+        exit(1)
+
+    if not os.environ.get('NEON_CONNECTION_STRING'):
+        print("ERROR: NEON_CONNECTION_STRING environment variable not set")
+        print("Please set: export NEON_CONNECTION_STRING=postgresql://user:pass@host/database")
         exit(1)
 
     processor = SchatzEvidenceProcessor()
