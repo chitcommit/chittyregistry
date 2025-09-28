@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(env -u NODE_OPTIONS node --loader ts-node/esm:*)",
+      "Bash(env -u NODE_OPTIONS CHITTY_SCHEMA_URL=http://localhost:3001 npx vitest run --reporter=verbose ./qa-test-suite.ts)",
+      "Bash(env -u NODE_OPTIONS npm run doctor)",
+      "Bash(env -u NODE_OPTIONS CHITTY_SCHEMA_URL=http://localhost:3001 npx vitest run --reporter=verbose ./tests/qa-test-suite.ts)",
+      "Bash(env -u NODE_OPTIONS CHITTY_SCHEMA_URL=http://localhost:3001 npx vitest run --reporter=verbose qa-test-suite.ts)",
+      "Bash(npm install:*)",
+      "Bash(env -u NODE_OPTIONS npm install axios)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "name": "@chittyos/chittyschema",
+  "version": "2.0.0",
+  "description": "Advanced legal evidence management platform with blockchain anchoring",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "start": "node dist/server.js",
+    "test": "vitest",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:studio": "drizzle-kit studio",
+    "mcp:start": "node --loader tsx src/mcp/server.ts",
+    "deploy": "wrangler deploy",
+    "deploy:gateway": "wrangler deploy -c wrangler.gateway.toml"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "@cloudflare/ai": "^1.0.53",
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@neon/serverless": "^0.9.3",
+    "@notionhq/client": "^2.2.15",
+    "drizzle-orm": "^0.32.1",
+    "hono": "^4.4.13",
+    "openai": "^4.53.0",
+    "pg": "^8.12.0",
+    "zod": "^3.23.8",
+    "nanoid": "^5.0.7",
+    "date-fns": "^3.6.0",
+    "jose": "^5.6.3",
+    "bcrypt": "^5.1.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240806.0",
+    "@types/node": "^20.14.11",
+    "@types/pg": "^8.11.6",
+    "drizzle-kit": "^0.23.0",
+    "eslint": "^9.7.0",
+    "tsup": "^8.2.3",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.4",
+    "wrangler": "^3.65.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chittyos/chittyschema.git"
+  },
+  "keywords": [
+    "legal",
+    "evidence",
+    "blockchain",
+    "mcp",
+    "cloudflare",
+    "chittyos"
+  ],
+  "author": "ChittyOS Team",
+  "license": "MIT"
+}

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChittyChain Schema Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">ChittyChain Schema Tool</h1>
+                    <p class="text-lg opacity-90">Production-Ready Legal Evidence Ledger Schema</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm opacity-75">Version 1.0.0</div>
+                    <div class="text-sm opacity-75">Phase 1 - Foundation</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-6">
+            <div class="flex space-x-8">
+                <button onclick="showTab('overview')" class="tab-btn py-4 px-2 border-b-2 border-transparent hover:border-blue-500 transition-colors duration-200" id="overview-tab">
+                    <i class="fas fa-home mr-2"></i>Overview
+                </button>
+                <button onclick="showTab('notion')" class="tab-btn py-4 px-2 border-b-2 border-transparent hover:border-blue-500 transition-colors duration-200" id="notion-tab">
+                    <i class="fab fa-notion mr-2"></i>Notion Setup
+                </button>
+                <button onclick="showTab('sql')" class="tab-btn py-4 px-2 border-b-2 border-transparent hover:border-blue-500 transition-colors duration-200" id="sql-tab">
+                    <i class="fas fa-database mr-2"></i>SQL Schema
+                </button>
+                <button onclick="showTab('bridge')" class="tab-btn py-4 px-2 border-b-2 border-transparent hover:border-blue-500 transition-colors duration-200" id="bridge-tab">
+                    <i class="fas fa-bridge mr-2"></i>Bridge Setup
+                </button>
+                <button onclick="showTab('tools')" class="tab-btn py-4 px-2 border-b-2 border-transparent hover:border-blue-500 transition-colors duration-200" id="tools-tab">
+                    <i class="fas fa-tools mr-2"></i>Tools
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+
+        <!-- Overview Tab -->
+        <div id="overview-content" class="tab-content">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Architecture Overview -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-sitemap text-2xl text-blue-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">5-Entity Architecture</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Built around 5 fundamental entity types for comprehensive legal case management.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                            People (PEO) - Legal entities
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Places (PLACE) - Locations
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                            Things (PROP) - Assets & Evidence
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                            Events (EVNT) - Actions & Transactions
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                            Authorities (AUTH) - Laws & Regulations
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-star text-2xl text-yellow-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Enterprise Features</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span class="text-sm">Event Sourcing & Audit Trail</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span class="text-sm">Cryptographic Chain of Custody</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span class="text-sm">GDPR Compliance Built-in</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span class="text-sm">Temporal Data Patterns</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span class="text-sm">Row-Level Security</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployment Options -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-rocket text-2xl text-purple-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Deployment Ready</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <button onclick="showTab('notion')" class="w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors">
+                            <i class="fab fa-notion mr-2"></i>Deploy to Notion
+                        </button>
+                        <button onclick="showTab('sql')" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-database mr-2"></i>PostgreSQL Schema
+                        </button>
+                        <button onclick="showTab('bridge')" class="w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition-colors">
+                            <i class="fas fa-bridge mr-2"></i>Bridge Setup
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Start Guide -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-2xl font-semibold mb-4">Quick Start Guide</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="text-blue-600 font-bold text-xl">1</span>
+                        </div>
+                        <h4 class="font-semibold mb-2">Choose Platform</h4>
+                        <p class="text-gray-600 text-sm">Start with Notion for immediate deployment or PostgreSQL for production.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="text-green-600 font-bold text-xl">2</span>
+                        </div>
+                        <h4 class="font-semibold mb-2">Deploy Schema</h4>
+                        <p class="text-gray-600 text-sm">Use our templates and tools to set up your database structure.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <span class="text-purple-600 font-bold text-xl">3</span>
+                        </div>
+                        <h4 class="font-semibold mb-2">Start Managing</h4>
+                        <p class="text-gray-600 text-sm">Begin entering cases, evidence, and legal data with full audit trails.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notion Tab -->
+        <div id="notion-content" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-2xl font-semibold mb-4">Notion Database Setup</h3>
+                <p class="text-gray-600 mb-6">Deploy ChittyChain to Notion with pre-configured database templates. Perfect for immediate use and prototyping.</p>
+
+                <!-- Database Templates -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">🏛️ People Database</h4>
+                        <p class="text-sm text-gray-600 mb-3">Legal entities, individuals, counsel</p>
+                        <button onclick="downloadNotionTemplate('people')" class="w-full bg-black text-white py-2 px-3 rounded text-sm hover:bg-gray-800">
+                            Download Template
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">📍 Places Database</h4>
+                        <p class="text-sm text-gray-600 mb-3">Locations, venues, jurisdictions</p>
+                        <button onclick="downloadNotionTemplate('places')" class="w-full bg-black text-white py-2 px-3 rounded text-sm hover:bg-gray-800">
+                            Download Template
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">🏠 Things Database</h4>
+                        <p class="text-sm text-gray-600 mb-3">Property, assets, evidence</p>
+                        <button onclick="downloadNotionTemplate('things')" class="w-full bg-black text-white py-2 px-3 rounded text-sm hover:bg-gray-800">
+                            Download Template
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">⚡ Events Database</h4>
+                        <p class="text-sm text-gray-600 mb-3">Actions, transactions, hearings</p>
+                        <button onclick="downloadNotionTemplate('events')" class="w-full bg-black text-white py-2 px-3 rounded text-sm hover:bg-gray-800">
+                            Download Template
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">⚖️ Authorities Database</h4>
+                        <p class="text-sm text-gray-600 mb-3">Laws, regulations, precedents</p>
+                        <button onclick="downloadNotionTemplate('authorities')" class="w-full bg-black text-white py-2 px-3 rounded text-sm hover:bg-gray-800">
+                            Download Template
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">📋 Cases Database</h4>
+                        <p class="text-sm text-gray-600 mb-3">Legal cases and litigation</p>
+                        <button onclick="downloadNotionTemplate('cases')" class="w-full bg-black text-white py-2 px-3 rounded text-sm hover:bg-gray-800">
+                            Download Template
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Complete Package -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h4 class="text-lg font-semibold mb-3">Complete Notion Package</h4>
+                    <p class="text-gray-600 mb-4">Download all database templates and setup instructions in one package.</p>
+                    <div class="flex space-x-4">
+                        <button onclick="downloadCompleteNotionPackage()" class="bg-black text-white py-3 px-6 rounded hover:bg-gray-800 transition-colors">
+                            <i class="fas fa-download mr-2"></i>Download Complete Package
+                        </button>
+                        <button onclick="viewNotionInstructions()" class="bg-blue-500 text-white py-3 px-6 rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-book mr-2"></i>View Instructions
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Setup Instructions -->
+            <div id="notion-instructions" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <h4 class="text-xl font-semibold mb-4">Notion Setup Instructions</h4>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h5 class="font-semibold">Step 1: Create Workspace</h5>
+                        <p class="text-gray-600">Create a new Notion workspace for your legal practice or use an existing one.</p>
+                    </div>
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h5 class="font-semibold">Step 2: Import Templates</h5>
+                        <p class="text-gray-600">Import each database template starting with People, then Places, Things, Events, Authorities, and Cases.</p>
+                    </div>
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h5 class="font-semibold">Step 3: Configure Relations</h5>
+                        <p class="text-gray-600">Set up database relations between tables (automated in templates).</p>
+                    </div>
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h5 class="font-semibold">Step 4: Setup ChittyID Generation</h5>
+                        <p class="text-gray-600">Configure automatic ChittyID generation using Notion formulas or Zapier integration.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SQL Tab -->
+        <div id="sql-content" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-2xl font-semibold mb-4">PostgreSQL Production Schema</h3>
+                <p class="text-gray-600 mb-6">Production-ready PostgreSQL schema with advanced features for enterprise deployment.</p>
+
+                <!-- Schema Options -->
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-3">🏗️ Complete Schema</h4>
+                        <p class="text-sm text-gray-600 mb-4">Full production schema with all tables, indexes, functions, and triggers.</p>
+                        <div class="space-y-2">
+                            <button onclick="downloadSQL('complete')" class="w-full bg-blue-500 text-white py-2 px-3 rounded text-sm hover:bg-blue-600">
+                                <i class="fas fa-download mr-2"></i>Download Complete Schema
+                            </button>
+                            <button onclick="viewSQL('complete')" class="w-full border border-blue-500 text-blue-500 py-2 px-3 rounded text-sm hover:bg-blue-50">
+                                <i class="fas fa-eye mr-2"></i>View Schema
+                            </button>
+                        </div>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-3">📦 Modular Components</h4>
+                        <p class="text-sm text-gray-600 mb-4">Individual components for custom deployment.</p>
+                        <div class="space-y-2">
+                            <button onclick="downloadSQL('core')" class="w-full bg-green-500 text-white py-2 px-3 rounded text-sm hover:bg-green-600">
+                                Core Tables Only
+                            </button>
+                            <button onclick="downloadSQL('extensions')" class="w-full bg-yellow-500 text-white py-2 px-3 rounded text-sm hover:bg-yellow-600">
+                                Extensions & Functions
+                            </button>
+                            <button onclick="downloadSQL('security')" class="w-full bg-red-500 text-white py-2 px-3 rounded text-sm hover:bg-red-600">
+                                Security & RLS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployment Guides -->
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="border rounded-lg p-4 text-center">
+                        <i class="fas fa-cloud text-2xl text-blue-500 mb-2"></i>
+                        <h5 class="font-semibold mb-2">Neon PostgreSQL</h5>
+                        <button onclick="showDeploymentGuide('neon')" class="text-blue-500 hover:text-blue-600 text-sm">
+                            View Guide
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4 text-center">
+                        <i class="fab fa-aws text-2xl text-orange-500 mb-2"></i>
+                        <h5 class="font-semibold mb-2">AWS RDS</h5>
+                        <button onclick="showDeploymentGuide('aws')" class="text-orange-500 hover:text-orange-600 text-sm">
+                            View Guide
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4 text-center">
+                        <i class="fas fa-server text-2xl text-gray-500 mb-2"></i>
+                        <h5 class="font-semibold mb-2">Self-Hosted</h5>
+                        <button onclick="showDeploymentGuide('self')" class="text-gray-500 hover:text-gray-600 text-sm">
+                            View Guide
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SQL Viewer -->
+            <div id="sql-viewer" class="bg-white rounded-lg shadow-md p-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-xl font-semibold">Schema Preview</h4>
+                    <button onclick="closeSQL()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="code-block" style="max-height: 500px; overflow-y: auto;" id="sql-code">
+                    <!-- SQL content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bridge Tab -->
+        <div id="bridge-content" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-2xl font-semibold mb-4">ChittyChain Bridge Setup</h3>
+                <p class="text-gray-600 mb-6">Cloudflare Worker for bidirectional sync between Notion, PostgreSQL, Google Drive, and financial SaaS platforms.</p>
+
+                <!-- Architecture Diagram -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h4 class="text-lg font-semibold mb-4 text-center">Bridge Architecture</h4>
+                    <div class="flex justify-center items-center space-x-4 text-sm">
+                        <div class="bg-black text-white px-3 py-2 rounded">Notion</div>
+                        <i class="fas fa-exchange-alt text-gray-400"></i>
+                        <div class="bg-orange-500 text-white px-3 py-2 rounded">Bridge Worker</div>
+                        <i class="fas fa-exchange-alt text-gray-400"></i>
+                        <div class="bg-blue-500 text-white px-3 py-2 rounded">PostgreSQL</div>
+                        <i class="fas fa-exchange-alt text-gray-400"></i>
+                        <div class="bg-green-500 text-white px-3 py-2 rounded">Google Drive</div>
+                    </div>
+                </div>
+
+                <!-- Bridge Components -->
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-3">🌐 Cloudflare Worker</h4>
+                        <p class="text-sm text-gray-600 mb-4">Edge computing for real-time sync and webhook handling.</p>
+                        <button onclick="downloadBridge('worker')" class="w-full bg-orange-500 text-white py-2 px-3 rounded text-sm hover:bg-orange-600">
+                            <i class="fas fa-download mr-2"></i>Download Worker Code
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-semibold mb-3">⚙️ Configuration</h4>
+                        <p class="text-sm text-gray-600 mb-4">Environment variables and deployment configuration.</p>
+                        <button onclick="downloadBridge('config')" class="w-full bg-blue-500 text-white py-2 px-3 rounded text-sm hover:bg-blue-600">
+                            <i class="fas fa-cog mr-2"></i>Download Config
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Environment Variables -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h4 class="text-lg font-semibold mb-4">Required Environment Variables</h4>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <h5 class="font-semibold mb-2">Database</h5>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>• DATABASE_URL</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold mb-2">Notion</h5>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>• NOTION_API_KEY</li>
+                                <li>• NOTION_DATABASE_PEOPLE</li>
+                                <li>• NOTION_DATABASE_CASES</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold mb-2">Google Drive</h5>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>• GOOGLE_DRIVE_CLIENT_ID</li>
+                                <li>• GOOGLE_DRIVE_CLIENT_SECRET</li>
+                                <li>• GOOGLE_DRIVE_REFRESH_TOKEN</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold mb-2">Security</h5>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>• BRIDGE_API_KEY</li>
+                                <li>• WEBHOOK_SECRET</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Tab -->
+        <div id="tools-content" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Schema Validator -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-check-circle text-2xl text-green-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Schema Validator</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Validate your existing database schema against ChittyChain standards.</p>
+                    <div class="space-y-3">
+                        <input type="file" id="schema-file" class="w-full p-2 border rounded" accept=".sql,.json">
+                        <button onclick="validateSchema()" class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                            Validate Schema
+                        </button>
+                    </div>
+                    <div id="validation-results" class="mt-4 hidden">
+                        <!-- Results will appear here -->
+                    </div>
+                </div>
+
+                <!-- ChittyID Generator -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-id-card text-2xl text-blue-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">ChittyID Generator</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Generate unique ChittyIDs for your entities and test the format.</p>
+                    <div class="space-y-3">
+                        <select id="entity-type" class="w-full p-2 border rounded">
+                            <option value="PEO">People (PEO)</option>
+                            <option value="PLACE">Places (PLACE)</option>
+                            <option value="PROP">Things (PROP)</option>
+                            <option value="EVNT">Events (EVNT)</option>
+                            <option value="AUTH">Authorities (AUTH)</option>
+                        </select>
+                        <input type="text" id="entity-name" class="w-full p-2 border rounded" placeholder="Entity name/identifier">
+                        <button onclick="generateChittyID()" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                            Generate ChittyID
+                        </button>
+                    </div>
+                    <div id="chitty-result" class="mt-4 hidden">
+                        <!-- Result will appear here -->
+                    </div>
+                </div>
+
+                <!-- Migration Assistant -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-exchange-alt text-2xl text-purple-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Migration Assistant</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Migrate data from existing systems to ChittyChain format.</p>
+                    <div class="space-y-3">
+                        <select id="source-system" class="w-full p-2 border rounded">
+                            <option value="">Select source system</option>
+                            <option value="excel">Excel/CSV</option>
+                            <option value="airtable">Airtable</option>
+                            <option value="clio">Clio</option>
+                            <option value="mycase">MyCase</option>
+                            <option value="generic">Generic Database</option>
+                        </select>
+                        <input type="file" id="migration-file" class="w-full p-2 border rounded" accept=".csv,.xlsx,.json">
+                        <button onclick="startMigration()" class="w-full bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600">
+                            Start Migration
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Documentation Generator -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book text-2xl text-yellow-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Documentation Generator</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Generate custom documentation for your ChittyChain deployment.</p>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-schema" class="mr-2" checked>
+                            <label for="include-schema" class="text-sm">Include Schema Diagrams</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-api" class="mr-2" checked>
+                            <label for="include-api" class="text-sm">Include API Documentation</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="include-workflows" class="mr-2" checked>
+                            <label for="include-workflows" class="text-sm">Include Workflows</label>
+                        </div>
+                        <button onclick="generateDocumentation()" class="w-full bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600">
+                            Generate Documentation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Backup & Export -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-download text-2xl text-gray-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Backup & Export</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Export your data in various formats for backup or migration.</p>
+                    <div class="space-y-3">
+                        <button onclick="exportData('json')" class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                            Export as JSON
+                        </button>
+                        <button onclick="exportData('csv')" class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                            Export as CSV
+                        </button>
+                        <button onclick="exportData('sql')" class="w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+                            Export as SQL Dump
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Health Monitor -->
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-heartbeat text-2xl text-red-500 mr-3"></i>
+                        <h3 class="text-xl font-semibold">Health Monitor</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Monitor the health and performance of your ChittyChain deployment.</p>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-sm">
+                            <span>Database Connection</span>
+                            <span class="text-green-500"><i class="fas fa-check-circle"></i> Healthy</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span>Bridge Worker</span>
+                            <span class="text-green-500"><i class="fas fa-check-circle"></i> Operational</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span>Notion Sync</span>
+                            <span class="text-yellow-500"><i class="fas fa-exclamation-triangle"></i> Warning</span>
+                        </div>
+                        <button onclick="runHealthCheck()" class="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">
+                            Run Full Health Check
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-2">ChittyChain Schema Tool v1.0.0</p>
+            <p class="text-gray-400 text-sm">Built for legal professionals. Powered by ChittyOS Framework.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

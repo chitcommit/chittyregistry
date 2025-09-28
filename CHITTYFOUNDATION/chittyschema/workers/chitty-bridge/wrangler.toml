@@ -1,0 +1,48 @@
+# Cloudflare Worker Configuration for ChittyChain Bridge
+name = "chitty-bridge"
+main = "src/index.ts"
+compatibility_date = "2024-09-15"
+workers_dev = true
+account_id = "bbf9fcd845e78035b7a135c481e88541"
+
+# KV Namespaces for state management and caching (will be created after initial deployment)
+# kv_namespaces = [
+#   { binding = "SYNC_STATE", id = "sync_state_kv", preview_id = "sync_state_preview" },
+#   { binding = "RATE_LIMITER", id = "rate_limiter_kv", preview_id = "rate_limiter_preview" }
+# ]
+
+# Environment variables (secrets managed via wrangler secret)
+[env.production]
+[env.production.vars]
+CHITTY_ID_API_URL = "https://id.chitty.cc"
+CHITTY_ROUTER_API_URL = "https://router.chitty.cc"
+
+[env.staging]
+[env.staging.vars]
+CHITTY_ID_API_URL = "https://staging-id.chitty.cc"
+CHITTY_ROUTER_API_URL = "https://staging-router.chitty.cc"
+
+# Development configuration
+[env.development]
+[env.development.vars]
+CHITTY_ID_API_URL = "https://id.chitty.cc"
+CHITTY_ROUTER_API_URL = "https://router.chitty.cc"
+
+# Build configuration
+[build]
+command = "npm run build"
+cwd = "."
+
+# Custom domains (configure when ready)
+# routes = [
+#   { pattern = "bridge.chitty.cc/*", zone_name = "chitty.cc" }
+# ]
+
+# Rate limiting and scaling (CPU limits require paid plan)
+# [limits]
+# cpu_ms = 30000  # 30 seconds max execution time
+
+# Durable Objects for state management (future enhancement)
+# [[durable_objects.bindings]]
+# name = "SYNC_COORDINATOR"
+# class_name = "SyncCoordinator"

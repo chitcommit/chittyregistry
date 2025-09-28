@@ -1,0 +1,77 @@
+COMPREHENSIVE PROPERTY EVIDENCE SUMMARY
+Arias v. Bianchi - Case No. 2024D007847
+=======================================
+
+KEY PROPERTY HOLDINGS
+---------------------
+
+1) 541 W ADDISON ST #3S (Lakeside Loft)
+   - PIN: 14-21-111-008-1006
+   - Purchase Date: November 22, 2019
+   - Purchase Price: $285,000
+   - Purchaser: Nicholas Bianchi (sole)
+   - Status: PRE-MARITAL PROPERTY
+   - Deed Type: Individual ownership
+   - Mortgage: Nicholas Bianchi only
+   - ChittyID: CHITTY-PROP-[PENDING]
+
+2) 550 W SURF ST #504 (City Studio)
+   - PIN: 14-28-122-017-1091
+   - Purchase Date: April 26, 2022
+   - Purchase Price: $175,000
+   - Purchaser: Nicholas Bianchi (sole)
+   - Status: PRE-MARITAL PROPERTY
+   - ALTA Policy: Shows unmarried purchaser
+   - ChittyID: CHITTY-PROP-[PENDING]
+
+3) 550 W SURF ST #211 (Second Unit)
+   - PIN: 14-28-122-017-1180
+   - Purchase Date: July 20, 2022
+   - Purchase Price: $96,059.14
+   - Purchaser: ARIBIA LLC
+   - LLC Member: Nicholas Bianchi (100% at time of purchase)
+   - Wire Source: Pre-marital account
+   - ChittyID: CHITTY-PROP-[PENDING]
+
+4) 4343 N CLARENDON AVE #1610 (High-Rise)
+   - PIN: 14-16-300-032-1238
+   - Purchase Date: March 15, 2021
+   - Purchase Price: $425,000
+   - Purchaser: Nicholas Bianchi (sole)
+   - Status: PRE-MARITAL PROPERTY
+   - ChittyID: CHITTY-PROP-[PENDING]
+
+LEGAL SIGNIFICANCE
+------------------
+Under Illinois law (750 ILCS 5/503), property acquired before marriage
+remains separate property unless transmuted to marital property through:
+- Joint titling
+- Commingling of funds
+- Written agreement
+- Substantial marital contributions
+
+Burden of proof rests on party asserting marital character of pre-marital property.
+
+CRITICAL EVIDENCE ITEMS
+------------------------
+- Deeds showing sole ownership
+- ALTA policies confirming unmarried status
+- Bank records showing pre-marital funding sources
+- LLC formation documents pre-dating marriage
+- Mortgage documents in individual name only
+
+CHAIN OF CUSTODY REQUIREMENTS
+------------------------------
+All property documents must maintain clear chain of custody with:
+- SHA256 hash verification
+- Timestamp authentication
+- Source verification (County Recorder, Title Company, Bank)
+- ChittyChain minting for immutability
+
+NEXT STEPS
+----------
+1. Verify all PINs through Cook County Assessor
+2. Obtain certified copies of all deeds
+3. Create atomic facts from each property document
+4. Establish contradiction tracking for any conflicting claims
+5. Mint all evidence to ChittyChain for permanence

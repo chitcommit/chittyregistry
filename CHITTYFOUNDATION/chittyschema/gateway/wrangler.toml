@@ -1,0 +1,70 @@
+name = "ChittyGateway"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Custom domain for the gateway
+routes = [
+  { pattern = "gateway.chitty.cc/*", custom_domain = true }
+]
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+SERVICE_NAME = "ChittyGateway"
+
+# KV Namespaces for caching and templates
+[[kv_namespaces]]
+binding = "CACHE"
+id = "gateway_cache_production"
+
+[[kv_namespaces]]
+binding = "TEMPLATES"
+id = "schema_templates_production"
+
+# D1 Database for metadata
+[[d1_databases]]
+binding = "DB"
+database_name = "chitty-gateway-metadata"
+database_id = "your-d1-database-id"
+
+# R2 Storage for exports
+[[r2_buckets]]
+binding = "EXPORTS"
+bucket_name = "chitty-exports"
+
+# AI Gateway Configuration
+[ai]
+binding = "AI"
+
+# Secrets (set via wrangler secret put)
+# DATABASE_URL - PostgreSQL connection for ChittyLedger
+# NOTION_API_KEY - For Notion integration
+# GITHUB_TOKEN - For GitHub operations
+# OPENAI_API_KEY - For AI features
+# AUTH_SECRET - JWT signing key
+
+# Development environment
+[env.development]
+name = "ChittyGateway-dev"
+vars = { ENVIRONMENT = "development" }
+
+[[env.development.kv_namespaces]]
+binding = "CACHE"
+id = "gateway_cache_dev"
+
+[[env.development.kv_namespaces]]
+binding = "TEMPLATES"
+id = "schema_templates_dev"
+
+# Rate limiting configuration
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1"
+# 100 requests per minute per IP
+simple = { limit = 100, period = 60 }
+
+# Analytics Engine binding
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "gateway_analytics"

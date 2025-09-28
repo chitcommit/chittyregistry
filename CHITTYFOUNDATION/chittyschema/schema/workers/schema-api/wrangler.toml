@@ -1,0 +1,103 @@
+# ChittySchema API - Universal Data Framework
+# Version 2.0 with distributed sessions and DLQ processing
+
+name = "chittyschema-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+account_id = "84f0f32886f1d6196380fe6cbe9656a8"
+
+# =====================================================
+# ENVIRONMENT VARIABLES
+# =====================================================
+
+[vars]
+SCHEMA_SERVICE_ID = "schema-api-v2"
+LEGACY_GRACE_PERIOD_DAYS = "90"
+
+# Production deployment
+[env.production]
+name = "chittyschema-api"
+routes = [
+  { pattern = "schema.chitty.cc/*", custom_domain = true }
+]
+vars = { ENVIRONMENT = "production", CHITTYOS_SERVICE_NAME = "chittyschema" }
+
+# Development environment
+[env.development]
+name = "chittyschema-api-dev"
+vars = { ENVIRONMENT = "development", CHITTYOS_SERVICE_NAME = "chittyschema-dev" }
+
+# =====================================================
+# KV NAMESPACES
+# =====================================================
+
+# Schema templates and metadata
+[[kv_namespaces]]
+binding = "SCHEMA_TEMPLATES"
+preview_id = "preview-schema-templates"
+id = "prod-schema-templates"
+
+# Verified users cache (legacy compatibility)
+[[kv_namespaces]]
+binding = "VERIFIED_USERS"
+preview_id = "preview-verified-users"
+id = "prod-verified-users"
+
+# Distributed session store
+[[kv_namespaces]]
+binding = "SESSION_STORE"
+preview_id = "preview-session-store"
+id = "prod-session-store"
+
+# Notion sync queue for async processing
+[[kv_namespaces]]
+binding = "NOTION_SYNC_QUEUE"
+preview_id = "preview-notion-sync-queue"
+id = "prod-notion-sync-queue"
+
+# Dead Letter Queue for failed operations
+[[kv_namespaces]]
+binding = "NOTION_DLQ"
+preview_id = "preview-notion-dlq"
+id = "prod-notion-dlq"
+
+# =====================================================
+# R2 BUCKETS
+# =====================================================
+
+# Schema exports and generated files
+[[r2_buckets]]
+binding = "SCHEMA_EXPORTS"
+bucket_name = "chittychain-schema-exports"
+preview_bucket_name = "chittychain-schema-exports-preview"
+
+# =====================================================
+# SCHEDULED EVENTS
+# =====================================================
+
+# Process Notion DLQ every 5 minutes
+[[triggers]]
+crons = ["*/5 * * * *"]
+
+# Cleanup expired sessions daily
+[[triggers]]
+crons = ["0 2 * * *"]
+
+# =====================================================
+# SECRETS DOCUMENTATION
+# =====================================================
+
+# Required secrets (set via `wrangler secret put`):
+# - CHITTY_ID_API_KEY: API key for ChittyID pipeline authentication
+# - SESSION_ENCRYPTION_KEY: Key for encrypting distributed session data
+# - NOTION_WEBHOOK_SECRET: Secret for verifying Notion webhook signatures
+# - PUPPETEER_SERVICE_URL: URL for Puppeteer service (PDF generation)
+
+# Build configuration
+[build]
+command = "npm run build"
+
+# Local development
+[dev]
+port = 8787

@@ -1,0 +1,279 @@
+name: Notion Command Center Sync
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+  # Notion Command Center database ID (the actual database being synced to)
+  NOTION_DATABASE_ID: "1eb94de4357980a59e4dfa2b801a7295"
+  CHITTY_REGISTRY_URL: https://registry.chitty.cc
+
+jobs:
+  sync-distributed-ai-data:
+    name: Sync Distributed AI Data to Notion Command
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefer-offline --no-audit
+
+      - name: Check Notion API credentials
+        run: |
+          if [ -z "$NOTION_API_KEY" ]; then
+            echo "❌ Error: NOTION_API_KEY secret is not configured"
+            echo ""
+            echo "To fix this:"
+            echo "1. Go to: Settings > Secrets and variables > Actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: NOTION_API_KEY"
+            echo "4. Value: Your Notion integration token"
+            echo ""
+            echo "To get your Notion integration token:"
+            echo "1. Go to https://www.notion.so/my-integrations"
+            echo "2. Create new integration or use existing"
+            echo "3. Copy the 'Internal Integration Token'"
+            exit 1
+          fi
+
+          echo "✅ Notion API key is configured"
+          echo "📊 Target database: Notion Command Center"
+          echo "🆔 Database ID: $NOTION_DATABASE_ID"
+
+      - name: Test Notion API connection
+        run: |
+          echo "Testing Notion API connection..."
+
+          # Test API connectivity
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $NOTION_API_KEY" \
+            -H "Notion-Version: 2022-06-28" \
+            https://api.notion.com/v1/users/me)
+
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Successfully connected to Notion API"
+          elif [ "$response" -eq 401 ]; then
+            echo "❌ Error: Invalid Notion API key"
+            echo ""
+            echo "Please verify your NOTION_API_KEY secret is correct"
+            echo "The key should start with 'secret_' and be about 50 characters long"
+            exit 1
+          else
+            echo "❌ Error: Failed to connect to Notion API (HTTP $response)"
+            echo ""
+            echo "This could be a network issue or Notion API downtime"
+            echo "Try re-running the workflow in a few minutes"
+            exit 1
+          fi
+
+      - name: Verify database access
+        run: |
+          echo "Verifying access to Notion Command Center database..."
+
+          # Check if we can access the database
+          response=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: Bearer $NOTION_API_KEY" \
+            -H "Notion-Version: 2022-06-28" \
+            "https://api.notion.com/v1/databases/$NOTION_DATABASE_ID")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Successfully accessed Notion Command Center database"
+
+            # Extract database title if available
+            title=$(echo "$body" | grep -o '"title":\[{"type":"text","text":{"content":"[^"]*"' | sed 's/.*"content":"//' | sed 's/"//')
+            if [ ! -z "$title" ]; then
+              echo "📚 Database: $title"
+            fi
+          elif [ "$http_code" -eq 404 ]; then
+            echo "❌ Error: Database not found or no access"
+            echo ""
+            echo "Please ensure:"
+            echo "1. The integration is added to your Notion Command Center database"
+            echo "   - Open: https://www.notion.so/1eb94de4357980a59e4dfa2b801a7295"
+            echo "   - Click ⋮ menu > Add connections > Find your integration"
+            echo "2. The database ID is correct: $NOTION_DATABASE_ID"
+            exit 1
+          else
+            echo "⚠️ Warning: Could not verify database access (HTTP $http_code)"
+            echo "Will attempt sync anyway..."
+          fi
+
+      - name: Sync Distributed AI Data to Notion
+        id: sync
+        run: |
+          echo "🚀 Starting data sync to Notion Command Center..."
+          echo ""
+
+          # Run the sync script
+          if [ -f "scripts/sync-notion-command.ts" ]; then
+            echo "Using custom sync script..."
+            npx tsx scripts/sync-notion-command.ts
+          else
+            echo "Using inline sync..."
+
+            # Inline sync using Node.js
+            node << 'EOF'
+            const { Client } = require('@notionhq/client');
+
+            const notion = new Client({
+              auth: process.env.NOTION_API_KEY
+            });
+
+            async function sync() {
+              try {
+                console.log('📊 Creating sync entry in Notion Command Center...');
+
+                const page = await notion.pages.create({
+                  parent: {
+                    database_id: process.env.NOTION_DATABASE_ID
+                  },
+                  properties: {
+                    "Name": {
+                      title: [{
+                        text: {
+                          content: `AI Data Sync #${process.env.GITHUB_RUN_NUMBER || Date.now()}`
+                        }
+                      }]
+                    },
+                    "Status": {
+                      select: { name: "Synced" }
+                    },
+                    "Timestamp": {
+                      date: { start: new Date().toISOString() }
+                    },
+                    "Source": {
+                      rich_text: [{
+                        text: {
+                          content: `GitHub Actions - ${process.env.GITHUB_SHA?.substring(0, 7) || 'manual'}`
+                        }
+                      }]
+                    }
+                  }
+                });
+
+                console.log('✅ Successfully synced to Notion Command Center');
+                console.log(`📄 Page created: ${page.id}`);
+                console.log(`🔗 View: ${page.url}`);
+
+              } catch (error) {
+                console.error('❌ Sync failed:', error.message);
+
+                if (error.code === 'object_not_found') {
+                  console.error('\n⚠️ The database was not found or the integration doesn\'t have access');
+                  console.error('Please add the integration to your database:');
+                  console.error('1. Open https://www.notion.so/1eb94de4357980a59e4dfa2b801a7295');
+                  console.error('2. Click ⋮ menu > Add connections > Select your integration');
+                } else if (error.code === 'validation_error') {
+                  console.error('\n⚠️ The database schema doesn\'t match expected properties');
+                  console.error('The sync tried to use: Name, Status, Timestamp, Source');
+                  console.error('Please ensure these properties exist in your database');
+                }
+
+                process.exit(1);
+              }
+            }
+
+            sync();
+            EOF
+          fi
+
+          echo "sync_status=success" >> $GITHUB_OUTPUT
+
+      - name: Report sync results
+        if: always()
+        run: |
+          echo ""
+          echo "════════════════════════════════════════"
+          if [ "${{ steps.sync.outputs.sync_status }}" = "success" ]; then
+            echo "✅ NOTION SYNC COMPLETED SUCCESSFULLY"
+            echo ""
+            echo "📊 Database: Notion Command Center"
+            echo "🔗 View: https://www.notion.so/1eb94de4357980a59e4dfa2b801a7295"
+          else
+            echo "❌ NOTION SYNC FAILED"
+            echo ""
+            echo "📋 Troubleshooting Steps:"
+            echo ""
+            echo "1. Check GitHub Secrets:"
+            echo "   - Go to Settings > Secrets and variables > Actions"
+            echo "   - Ensure NOTION_API_KEY is set correctly"
+            echo ""
+            echo "2. Verify Integration Access:"
+            echo "   - Open https://www.notion.so/1eb94de4357980a59e4dfa2b801a7295"
+            echo "   - Click ⋮ menu > Add connections"
+            echo "   - Make sure your integration is connected"
+            echo ""
+            echo "3. Get Your Integration Token:"
+            echo "   - Visit https://www.notion.so/my-integrations"
+            echo "   - Create or select your integration"
+            echo "   - Copy the Internal Integration Token"
+            echo ""
+            echo "4. Database IDs Reference:"
+            echo "   - Notion Command Center: 1eb94de4357980a59e4dfa2b801a7295"
+            echo "   - Evidence DB: d75ba8ae7a6d4c50b474ddb519d086c2"
+            echo "   - Case Management: 1eb94de435798054bd2fea10db2bc34c"
+            exit 1
+          fi
+          echo "════════════════════════════════════════"
+
+      - name: Create issue on failure
+        if: failure() && github.event_name == 'push'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔴 Notion Command Center Sync Failed - Run #${context.runNumber}`,
+              body: `## Sync Failure Report
+
+              The Notion Command Center sync has failed.
+
+              **Details:**
+              - Run: [#${context.runNumber}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              - Commit: ${context.sha}
+              - Branch: ${context.ref}
+
+              **Quick Fix Guide:**
+
+              ### 1. Add NOTION_API_KEY to GitHub Secrets
+              - Go to [Repository Secrets](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/settings/secrets/actions)
+              - Click "New repository secret"
+              - Name: \`NOTION_API_KEY\`
+              - Value: Your Notion integration token from [here](https://www.notion.so/my-integrations)
+
+              ### 2. Connect Integration to Database
+              - Open [Notion Command Center Database](https://www.notion.so/1eb94de4357980a59e4dfa2b801a7295)
+              - Click ⋮ menu > Add connections
+              - Select your integration
+
+              ### 3. Database IDs for Reference
+              - **Notion Command Center**: \`1eb94de4357980a59e4dfa2b801a7295\`
+              - **ChittyLedger™**: \`3a168a269d06425fbc308ab6ab66d28b\`
+              - **Evidence Database**: \`d75ba8ae7a6d4c50b474ddb519d086c2\`
+              - **Case Management**: \`1eb94de435798054bd2fea10db2bc34c\`
+
+              @chitcommit Please investigate and resolve.`,
+              labels: ['bug', 'notion-sync', 'high-priority']
+            });
+            console.log(`Created issue #${issue.data.number}`);

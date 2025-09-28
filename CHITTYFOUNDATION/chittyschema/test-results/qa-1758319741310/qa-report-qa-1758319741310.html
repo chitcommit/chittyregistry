@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChittyOS QA Test Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #f5f5f5; padding: 20px; border-radius: 5px; }
+        .summary { margin: 20px 0; }
+        .suite { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 3px; }
+        .passed { background: #d4edda; }
+        .failed { background: #f8d7da; }
+        .skipped { background: #fff3cd; }
+        .recommendations { background: #e2e3e5; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ChittyOS QA Test Report</h1>
+        <p><strong>Run ID:</strong> qa-1758319741310</p>
+        <p><strong>Environment:</strong> development</p>
+        <p><strong>Duration:</strong> 0.01 minutes</p>
+        <p><strong>Status:</strong> FAILED</p>
+    </div>
+
+    <div class="summary">
+        <h2>Summary</h2>
+        <p>Total Suites: 1 (0 passed, 1 failed, 0 skipped)</p>
+        <p>Total Tests: 0 (0 passed, 0 failed)</p>
+        
+    </div>
+
+    <h2>Test Suites</h2>
+    
+        <div class="suite failed">
+            <h3>Smoke Tests</h3>
+            <p>Status: FAILED</p>
+            <p>Duration: 0.71s</p>
+            <p>Tests: 0 (0 passed, 0 failed, 0 skipped)</p>
+            
+            <p><strong>Error:</strong> Failed to parse Jest results: Unexpected end of JSON input</p>
+        </div>
+    
+
+    
+        <div class="recommendations">
+            <h2>Recommendations</h2>
+            <ul>
+                <li>Fix 1 failed test suite(s): Smoke Tests</li><li>URGENT: Address critical test failures before deployment</li>
+            </ul>
+        </div>
+    
+</body>
+</html>

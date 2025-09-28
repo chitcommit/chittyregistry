@@ -1,0 +1,40 @@
+{
+  "runId": "qa-1758244117217",
+  "startTime": "2025-09-19T01:08:37.217Z",
+  "endTime": "2025-09-19T01:08:38.319Z",
+  "totalDuration": 1102,
+  "environment": "development",
+  "testSuites": [
+    {
+      "suiteId": "smoke-tests",
+      "suiteName": "Smoke Tests",
+      "startTime": "2025-09-19T01:08:37.220Z",
+      "endTime": "2025-09-19T01:08:38.319Z",
+      "duration": 1099,
+      "status": "failed",
+      "totalTests": 0,
+      "passedTests": 0,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "errorMessage": "Failed to parse Jest results: Unexpected end of JSON input",
+      "detailedResults": {
+        "stdout": "",
+        "stderr": "testPathPattern:\n\n  Option \"testPathPattern\" was replaced by \"--testPathPatterns\". \"--testPathPatterns\" is only available as a command-line option.\n  \n  Please update your configuration.\n\n  CLI Options Documentation:\n  https://jestjs.io/docs/cli\n\n"
+      }
+    }
+  ],
+  "summary": {
+    "totalSuites": 1,
+    "passedSuites": 0,
+    "failedSuites": 1,
+    "skippedSuites": 0,
+    "totalTests": 0,
+    "passedTests": 0,
+    "failedTests": 0,
+    "overallStatus": "failed"
+  },
+  "recommendations": [
+    "Fix 1 failed test suite(s): Smoke Tests",
+    "URGENT: Address critical test failures before deployment"
+  ]
+}

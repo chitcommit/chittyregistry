@@ -1,0 +1,1066 @@
+openapi: 3.1.0
+info:
+  title: ChittyLedger Schema Management API
+  version: 1.0.0
+  description: |
+    AI-powered legal database schema management platform for ChittyLedger.
+
+    This API provides tools for generating, validating, and deploying database schemas
+    specifically designed for legal evidence management and case tracking.
+  contact:
+    name: ChittyOS Framework Team
+    email: support@chitty.cc
+    url: https://schema.chitty.cc
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://schema.chitty.cc/api
+    description: Production API
+  - url: https://schema-dev.chitty.cc/api
+    description: Development API
+  - url: http://localhost:8787/api
+    description: Local development
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: Schema Operations
+    description: Generate and manage database schemas
+  - name: Validation
+    description: Validate schemas against ChittyChain standards
+  - name: Export
+    description: Export schemas in various formats
+  - name: Notion Integration
+    description: Deploy and sync with Notion
+  - name: Migration
+    description: Data migration planning and execution
+  - name: ChittyID
+    description: Generate and manage ChittyIDs
+  - name: MCP
+    description: Model Context Protocol operations
+  - name: Health
+    description: Service health and status
+
+paths:
+  # =====================================================
+  # SCHEMA OPERATIONS
+  # =====================================================
+
+  /schema/templates:
+    get:
+      operationId: listSchemaTemplates
+      summary: List available schema templates
+      tags: [Schema Operations]
+      parameters:
+        - name: platform
+          in: query
+          schema:
+            type: string
+            enum: [notion, postgresql, mysql, airtable]
+          description: Filter templates by platform
+        - name: entity
+          in: query
+          schema:
+            type: string
+            enum: [people, places, things, events, authorities, cases, evidence, facts]
+          description: Filter templates by entity type
+      responses:
+        '200':
+          description: List of available templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /schema/generate:
+    post:
+      operationId: generateSchema
+      summary: Generate a custom ChittyLedger schema
+      tags: [Schema Operations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateSchemaRequest'
+      responses:
+        '200':
+          description: Generated schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateSchemaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /schema/analyze:
+    post:
+      operationId: analyzeSchema
+      summary: AI-powered schema analysis
+      tags: [Schema Operations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeSchemaRequest'
+      responses:
+        '200':
+          description: Schema analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResponse'
+
+  # =====================================================
+  # VALIDATION
+  # =====================================================
+
+  /validate:
+    post:
+      operationId: validateSchema
+      summary: Validate schema against ChittyLedger standards
+      tags: [Validation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateSchemaRequest'
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+
+  # =====================================================
+  # EXPORT
+  # =====================================================
+
+  /export/sql:
+    post:
+      operationId: exportSQL
+      summary: Export schema as SQL
+      tags: [Export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: SQL schema file
+          content:
+            text/plain:
+              schema:
+                type: string
+            application/sql:
+              schema:
+                type: string
+
+  /export/json:
+    post:
+      operationId: exportJSON
+      summary: Export schema as JSON
+      tags: [Export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+      responses:
+        '200':
+          description: JSON schema
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JSONSchemaExport'
+
+  /export/documentation:
+    post:
+      operationId: exportDocumentation
+      summary: Generate schema documentation
+      tags: [Export]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentationRequest'
+      responses:
+        '200':
+          description: Generated documentation
+          content:
+            text/markdown:
+              schema:
+                type: string
+            text/html:
+              schema:
+                type: string
+
+  # =====================================================
+  # NOTION INTEGRATION
+  # =====================================================
+
+  /notion/templates:
+    get:
+      operationId: getNotionTemplates
+      summary: Get Notion database templates
+      tags: [Notion Integration]
+      parameters:
+        - name: entity
+          in: query
+          schema:
+            type: string
+          description: Specific entity template
+      responses:
+        '200':
+          description: Notion templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotionTemplatesResponse'
+
+  /notion/deploy:
+    post:
+      operationId: deployToNotion
+      summary: Deploy schema to Notion workspace
+      tags: [Notion Integration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotionDeployRequest'
+      responses:
+        '202':
+          description: Deployment initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentResponse'
+
+  /notion/sync:
+    post:
+      operationId: syncNotion
+      summary: Sync existing Notion databases
+      tags: [Notion Integration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotionSyncRequest'
+      responses:
+        '200':
+          description: Sync results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+
+  # =====================================================
+  # MIGRATION
+  # =====================================================
+
+  /migration/plan:
+    post:
+      operationId: planMigration
+      summary: Create migration plan
+      tags: [Migration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationPlanRequest'
+      responses:
+        '200':
+          description: Migration plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationPlan'
+
+  /migration/execute:
+    post:
+      operationId: executeMigration
+      summary: Execute migration
+      tags: [Migration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationExecuteRequest'
+      responses:
+        '202':
+          description: Migration started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MigrationStatus'
+
+  # =====================================================
+  # CHITTYID
+  # =====================================================
+
+  /chittyid/generate:
+    post:
+      operationId: generateChittyID
+      summary: Generate a ChittyID
+      tags: [ChittyID]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateChittyIDRequest'
+      responses:
+        '200':
+          description: Generated ChittyID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChittyIDResponse'
+
+  /chittyid/validate:
+    post:
+      operationId: validateChittyID
+      summary: Validate a ChittyID
+      tags: [ChittyID]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chittyId]
+              properties:
+                chittyId:
+                  type: string
+                  pattern: '^[A-Z]{3,5}-[A-Z0-9]{16,}$'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChittyIDValidation'
+
+  # =====================================================
+  # MCP (Model Context Protocol)
+  # =====================================================
+
+  /mcp/connect:
+    get:
+      operationId: connectMCP
+      summary: Establish MCP WebSocket connection
+      tags: [MCP]
+      responses:
+        '101':
+          description: WebSocket connection established
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /mcp/tools:
+    get:
+      operationId: listMCPTools
+      summary: List available MCP tools
+      tags: [MCP]
+      responses:
+        '200':
+          description: Available MCP tools
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPToolsList'
+
+  /mcp/execute:
+    post:
+      operationId: executeMCPTool
+      summary: Execute an MCP tool
+      tags: [MCP]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MCPExecuteRequest'
+      responses:
+        '200':
+          description: Tool execution result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # =====================================================
+  # HEALTH
+  # =====================================================
+
+  /health:
+    get:
+      operationId: getHealth
+      summary: Service health check
+      tags: [Health]
+      security: []  # No auth required for health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service degraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  # =====================================================
+  # SECURITY SCHEMES
+  # =====================================================
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT bearer token
+
+  # =====================================================
+  # SCHEMAS
+  # =====================================================
+
+  schemas:
+    # Request schemas
+    GenerateSchemaRequest:
+      type: object
+      required: [platform, entities]
+      properties:
+        platform:
+          type: string
+          enum: [notion, postgresql, mysql, airtable]
+          description: Target platform for schema
+        entities:
+          type: array
+          items:
+            type: string
+            enum: [people, places, things, events, authorities, cases, evidence, facts, relationships, transactions]
+          description: Entities to include in schema
+        customizations:
+          type: object
+          properties:
+            includeGDPR:
+              type: boolean
+              default: true
+              description: Include GDPR compliance fields
+            includeBlockchain:
+              type: boolean
+              default: false
+              description: Include blockchain integration
+            includeFinancial:
+              type: boolean
+              default: true
+              description: Include financial tracking
+            jurisdiction:
+              type: string
+              default: USA
+              description: Legal jurisdiction
+            customFields:
+              type: array
+              items:
+                type: object
+                properties:
+                  entity:
+                    type: string
+                  field:
+                    type: string
+                  type:
+                    type: string
+                  required:
+                    type: boolean
+
+    ValidateSchemaRequest:
+      type: object
+      required: [schema, format]
+      properties:
+        schema:
+          type: string
+          description: Schema to validate
+        format:
+          type: string
+          enum: [sql, json, notion]
+          description: Schema format
+        strictMode:
+          type: boolean
+          default: false
+          description: Enable strict validation
+
+    AnalyzeSchemaRequest:
+      type: object
+      required: [schema]
+      properties:
+        schema:
+          type: string
+        format:
+          type: string
+          enum: [sql, json, notion]
+        context:
+          type: object
+          properties:
+            industry:
+              type: string
+              enum: [legal, healthcare, finance, government]
+            size:
+              type: string
+              enum: [startup, small, medium, enterprise]
+            compliance:
+              type: array
+              items:
+                type: string
+
+    ExportRequest:
+      type: object
+      required: [schemaId]
+      properties:
+        schemaId:
+          type: string
+          description: ID of schema to export
+        format:
+          type: string
+          enum: [sql, json, csv, notion]
+        options:
+          type: object
+          properties:
+            includeData:
+              type: boolean
+            includeIndexes:
+              type: boolean
+            includeFunctions:
+              type: boolean
+
+    NotionDeployRequest:
+      type: object
+      required: [workspaceId, parentPageId, entities]
+      properties:
+        workspaceId:
+          type: string
+        parentPageId:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+        autoRelations:
+          type: boolean
+          default: true
+        includeTemplates:
+          type: boolean
+          default: true
+
+    MigrationPlanRequest:
+      type: object
+      required: [sourceSystem, targetPlatform, dataVolume]
+      properties:
+        sourceSystem:
+          type: string
+          description: Source system name
+        sourceSchema:
+          type: string
+          description: Source schema definition
+        targetPlatform:
+          type: string
+          enum: [notion, postgresql, hybrid]
+        dataVolume:
+          type: string
+          enum: [small, medium, large, enterprise]
+        requirements:
+          type: array
+          items:
+            type: string
+
+    GenerateChittyIDRequest:
+      type: object
+      required: [entityType, identifier]
+      properties:
+        entityType:
+          type: string
+          enum: [PEO, PLACE, PROP, EVNT, AUTH, CASE, EVID, FACT, REL, TXN]
+        identifier:
+          type: string
+          description: Unique identifier for the entity
+        region:
+          type: string
+          default: '1'
+        trust:
+          type: integer
+          minimum: 0
+          maximum: 10
+          default: 3
+        jurisdiction:
+          type: string
+          default: USA
+
+    MCPExecuteRequest:
+      type: object
+      required: [tool, arguments]
+      properties:
+        tool:
+          type: string
+          description: Tool name to execute
+        arguments:
+          type: object
+          description: Tool-specific arguments
+
+    # Response schemas
+    GenerateSchemaResponse:
+      type: object
+      properties:
+        schemaId:
+          type: string
+        schema:
+          type: string
+        platform:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+        downloadUrl:
+          type: string
+        previewUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ValidationResponse:
+      type: object
+      properties:
+        isValid:
+          type: boolean
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [error, warning, info]
+              message:
+                type: string
+              line:
+                type: integer
+              column:
+                type: integer
+              suggestion:
+                type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+
+    AnalysisResponse:
+      type: object
+      properties:
+        score:
+          type: number
+        compliance:
+          type: object
+          properties:
+            gdpr:
+              type: boolean
+            hipaa:
+              type: boolean
+            sox:
+              type: boolean
+        performance:
+          type: object
+          properties:
+            indexingScore:
+              type: number
+            queryOptimization:
+              type: number
+            scalability:
+              type: string
+        security:
+          type: object
+          properties:
+            encryptionLevel:
+              type: string
+            accessControls:
+              type: boolean
+            auditTrail:
+              type: boolean
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              priority:
+                type: string
+              suggestion:
+                type: string
+
+    ChittyIDResponse:
+      type: object
+      properties:
+        chittyId:
+          type: string
+        entityType:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+
+    ChittyIDValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        entityType:
+          type: string
+        region:
+          type: string
+        trust:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    MigrationPlan:
+      type: object
+      properties:
+        planId:
+          type: string
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              order:
+                type: integer
+              description:
+                type: string
+              estimatedTime:
+                type: string
+              risk:
+                type: string
+                enum: [low, medium, high]
+              automationLevel:
+                type: number
+        totalTime:
+          type: string
+        complexity:
+          type: string
+          enum: [simple, moderate, complex]
+        recommendations:
+          type: array
+          items:
+            type: string
+        cost:
+          type: object
+          properties:
+            estimated:
+              type: number
+            breakdown:
+              type: object
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          properties:
+            database:
+              type: boolean
+            cache:
+              type: boolean
+            storage:
+              type: boolean
+            ai:
+              type: boolean
+            notion:
+              type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        version:
+          type: string
+        uptime:
+          type: integer
+
+    TemplateListResponse:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              platform:
+                type: string
+              entities:
+                type: array
+                items:
+                  type: string
+              description:
+                type: string
+              version:
+                type: string
+
+    JSONSchemaExport:
+      type: object
+      properties:
+        $schema:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        properties:
+          type: object
+
+    NotionTemplatesResponse:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            type: object
+            properties:
+              entity:
+                type: string
+              title:
+                type: string
+              properties:
+                type: object
+              relations:
+                type: array
+                items:
+                  type: string
+
+    NotionSyncRequest:
+      type: object
+      required: [workspaceId]
+      properties:
+        workspaceId:
+          type: string
+        databaseIds:
+          type: array
+          items:
+            type: string
+        syncDirection:
+          type: string
+          enum: [push, pull, bidirectional]
+
+    DeploymentResponse:
+      type: object
+      properties:
+        deploymentId:
+          type: string
+        status:
+          type: string
+          enum: [initiated, in_progress, completed, failed]
+        message:
+          type: string
+        databaseIds:
+          type: object
+          additionalProperties:
+            type: string
+
+    SyncResponse:
+      type: object
+      properties:
+        syncId:
+          type: string
+        status:
+          type: string
+        processed:
+          type: integer
+        created:
+          type: integer
+        updated:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+
+    MigrationExecuteRequest:
+      type: object
+      required: [planId]
+      properties:
+        planId:
+          type: string
+        dryRun:
+          type: boolean
+          default: true
+        notifyUrl:
+          type: string
+          format: uri
+
+    MigrationStatus:
+      type: object
+      properties:
+        migrationId:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        progress:
+          type: number
+        currentStep:
+          type: string
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              level:
+                type: string
+              message:
+                type: string
+
+    DocumentationRequest:
+      type: object
+      required: [schemaId]
+      properties:
+        schemaId:
+          type: string
+        format:
+          type: string
+          enum: [markdown, html, pdf]
+        includeExamples:
+          type: boolean
+          default: true
+        includeDiagrams:
+          type: boolean
+          default: true
+
+    MCPToolsList:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              inputSchema:
+                type: object
+
+  # =====================================================
+  # RESPONSES
+  # =====================================================
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: string
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: unauthorized
+              message:
+                type: string
+                default: Invalid or missing API key
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: not_found
+              message:
+                type: string
+
+    RateLimited:
+      description: Rate limited
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                default: rate_limited
+              message:
+                type: string
+              retryAfter:
+                type: integer
+                description: Seconds until next request allowed

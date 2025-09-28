@@ -1,0 +1,570 @@
+name: ChittyOS QA and Security Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*', 'hotfix/*' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run full security audit daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - qa-only
+          - security-only
+          - smoke-only
+          - critical-only
+      fail_fast:
+        description: 'Stop on first failure'
+        required: false
+        default: false
+        type: boolean
+      generate_reports:
+        description: 'Generate test reports'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '15'
+  TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chitty_test
+  CHITTY_REGISTRY_URL: https://registry.chitty.cc
+  SECURITY_TEST_MODE: true
+  QA_EMAIL_NOTIFICATIONS: false
+  SECURITY_ALERT_EMAIL: false
+
+jobs:
+  # Environment Setup and Validation
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      run_qa: ${{ steps.determine-tests.outputs.run_qa }}
+      run_security: ${{ steps.determine-tests.outputs.run_security }}
+      test_matrix: ${{ steps.determine-tests.outputs.test_matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for accurate change detection
+
+      - name: Determine tests to run
+        id: determine-tests
+        run: |
+          TEST_TYPE="${{ github.event.inputs.test_type || 'all' }}"
+
+          # Determine what tests to run based on changes and inputs
+          if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "qa-only" ]]; then
+            echo "run_qa=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_qa=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ "$TEST_TYPE" == "all" || "$TEST_TYPE" == "security-only" ]]; then
+            echo "run_security=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_security=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Create test matrix based on changes
+          echo 'test_matrix={"include":[
+            {"name":"smoke","category":"smoke","timeout":"5m"},
+            {"name":"integration","category":"integration","timeout":"30m"},
+            {"name":"compliance","category":"compliance","timeout":"25m"},
+            {"name":"security","category":"security","timeout":"45m"}
+          ]}' >> $GITHUB_OUTPUT
+
+      - name: Validate environment
+        run: |
+          echo "🔍 Validating CI/CD environment..."
+          echo "Node version: $NODE_VERSION"
+          echo "Test type: ${{ github.event.inputs.test_type || 'all' }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+  # Database Setup
+  database-setup:
+    runs-on: ubuntu-latest
+    needs: setup
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chitty_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Initialize test database
+        run: |
+          echo "🗄️ Setting up test database..."
+          npm run db:push
+          echo "✅ Database schema applied"
+
+      - name: Seed test data
+        run: |
+          echo "🌱 Seeding test database..."
+          NODE_ENV=test npm run seed
+          echo "✅ Test data seeded"
+
+      - name: Cache database state
+        uses: actions/cache@v3
+        with:
+          path: |
+            /tmp/postgres-backup.sql
+          key: database-${{ github.sha }}
+          restore-keys: |
+            database-
+
+  # Smoke Tests - Fast validation
+  smoke-tests:
+    runs-on: ubuntu-latest
+    needs: [setup, database-setup]
+    if: needs.setup.outputs.run_qa == 'true' || github.event.inputs.test_type == 'smoke-only'
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke tests
+        run: |
+          echo "💨 Running smoke tests..."
+          npx tsx scripts/run-qa-suite.ts --smoke --fail-fast
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-results
+          path: test-results/
+
+  # QA Test Suite - Comprehensive validation
+  qa-tests:
+    runs-on: ubuntu-latest
+    needs: [setup, database-setup, smoke-tests]
+    if: needs.setup.outputs.run_qa == 'true' && needs.smoke-tests.result == 'success'
+    timeout-minutes: 90
+    strategy:
+      fail-fast: ${{ github.event.inputs.fail_fast == 'true' }}
+      matrix: ${{ fromJson(needs.setup.outputs.test_matrix) }}
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chitty_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore database state
+        uses: actions/cache@v3
+        with:
+          path: |
+            /tmp/postgres-backup.sql
+          key: database-${{ github.sha }}
+
+      - name: Run QA test suite - ${{ matrix.name }}
+        run: |
+          echo "🧪 Running ${{ matrix.name }} tests..."
+          timeout ${{ matrix.timeout }} npx tsx scripts/run-qa-suite.ts \
+            --include-categories=${{ matrix.category }} \
+            --generate-report \
+            --output-dir=test-results/${{ matrix.name }}
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          QA_TEST_CATEGORY: ${{ matrix.category }}
+
+      - name: Upload QA test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: qa-test-results-${{ matrix.name }}
+          path: test-results/${{ matrix.name }}/
+          retention-days: 30
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: QA Tests - ${{ matrix.name }}
+          path: test-results/${{ matrix.name }}/*.xml
+          reporter: jest-junit
+          fail-on-error: true
+
+  # Security Audit - Penetration testing
+  security-audit:
+    runs-on: ubuntu-latest
+    needs: [setup, database-setup]
+    if: needs.setup.outputs.run_security == 'true'
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        risk_level: [critical, high, medium]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chitty_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit - ${{ matrix.risk_level }}
+        run: |
+          echo "🔒 Running security audit - ${{ matrix.risk_level }} risk level..."
+          npx tsx scripts/run-security-audit.ts \
+            --risk-levels=${{ matrix.risk_level }} \
+            --generate-report \
+            --report-formats=json,html,sarif \
+            --output-dir=security-results/${{ matrix.risk_level }}
+        env:
+          NODE_ENV: security-test
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          SECURITY_TEST_MODE: true
+
+      - name: Upload security audit results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit-${{ matrix.risk_level }}
+          path: security-results/${{ matrix.risk_level }}/
+          retention-days: 90
+
+      - name: Upload SARIF to GitHub Security
+        if: always() && matrix.risk_level == 'critical'
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: security-results/${{ matrix.risk_level }}/*.sarif
+
+      - name: Check for critical vulnerabilities
+        if: matrix.risk_level == 'critical'
+        run: |
+          echo "🔍 Checking for critical vulnerabilities..."
+          if find security-results/${{ matrix.risk_level }} -name "*.json" -exec grep -l '"severity":"critical"' {} \;; then
+            echo "🚨 Critical vulnerabilities found!"
+            echo "CRITICAL_VULNS_FOUND=true" >> $GITHUB_ENV
+            exit 1
+          else
+            echo "✅ No critical vulnerabilities found"
+          fi
+
+  # Load Testing - Performance validation
+  load-tests:
+    runs-on: ubuntu-latest
+    needs: [setup, qa-tests]
+    if: github.event_name == 'schedule' || github.event.inputs.test_type == 'all'
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: chitty_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application server
+        run: |
+          echo "🚀 Starting application server..."
+          npm run build
+          npm start &
+          sleep 10
+          curl -f http://localhost:3000/health || exit 1
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+
+      - name: Run load tests
+        run: |
+          echo "⚡ Running load tests..."
+          npx jest tests/load/performance.test.ts \
+            --verbose \
+            --testTimeout=2700000
+        env:
+          NODE_ENV: load-test
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+
+      - name: Upload load test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results
+          path: test-results/load/
+          retention-days: 30
+
+  # Compliance Validation
+  compliance-check:
+    runs-on: ubuntu-latest
+    needs: [qa-tests, security-audit]
+    if: always() && (needs.qa-tests.result == 'success' || needs.security-audit.result == 'success')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: all-results/
+
+      - name: Generate compliance report
+        run: |
+          echo "📋 Generating compliance report..."
+          npx tsx scripts/generate-compliance-report.ts \
+            --input-dir=all-results \
+            --output-dir=compliance-report \
+            --formats=json,html,pdf
+        env:
+          NODE_ENV: compliance
+
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: compliance-report
+          path: compliance-report/
+          retention-days: 365
+
+      - name: Post compliance status
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const complianceData = JSON.parse(fs.readFileSync('compliance-report/compliance-summary.json', 'utf8'));
+
+            const comment = `## 🔒 ChittyOS Compliance Report
+
+            **Overall Status**: ${complianceData.status}
+            **QA Tests**: ${complianceData.qa.passed}/${complianceData.qa.total} passed
+            **Security Audit**: ${complianceData.security.riskScore}/100 risk score
+            **Vulnerabilities**: ${complianceData.security.critical} critical, ${complianceData.security.high} high
+
+            **OWASP Compliance**: ${complianceData.compliance.owasp}
+            **NIST Compliance**: ${complianceData.compliance.nist}
+
+            [View Full Report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Notification and Reporting
+  notify-results:
+    runs-on: ubuntu-latest
+    needs: [qa-tests, security-audit, load-tests, compliance-check]
+    if: always()
+    steps:
+      - name: Determine overall status
+        run: |
+          QA_STATUS="${{ needs.qa-tests.result }}"
+          SECURITY_STATUS="${{ needs.security-audit.result }}"
+          LOAD_STATUS="${{ needs.load-tests.result }}"
+          COMPLIANCE_STATUS="${{ needs.compliance-check.result }}"
+
+          if [[ "$QA_STATUS" == "failure" || "$SECURITY_STATUS" == "failure" ]]; then
+            echo "OVERALL_STATUS=failure" >> $GITHUB_ENV
+            echo "STATUS_EMOJI=❌" >> $GITHUB_ENV
+          elif [[ "$QA_STATUS" == "success" && "$SECURITY_STATUS" == "success" ]]; then
+            echo "OVERALL_STATUS=success" >> $GITHUB_ENV
+            echo "STATUS_EMOJI=✅" >> $GITHUB_ENV
+          else
+            echo "OVERALL_STATUS=partial" >> $GITHUB_ENV
+            echo "STATUS_EMOJI=⚠️" >> $GITHUB_ENV
+          fi
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "${{ env.STATUS_EMOJI }} ChittyOS Pipeline: ${{ env.OVERALL_STATUS }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*ChittyOS QA & Security Pipeline Results*\n\nBranch: `${{ github.ref_name }}`\nCommit: `${{ github.sha }}`\nTriggered by: ${{ github.actor }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*QA Tests:* ${{ needs.qa-tests.result }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Security Audit:* ${{ needs.security-audit.result }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Load Tests:* ${{ needs.load-tests.result }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Compliance:* ${{ needs.compliance-check.result }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Update deployment status
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Updating deployment status..."
+          if [[ "${{ env.OVERALL_STATUS }}" == "success" ]]; then
+            echo "DEPLOYMENT_READY=true" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_READY=false" >> $GITHUB_ENV
+          fi
+
+  # Security Alert for Critical Issues
+  security-alert:
+    runs-on: ubuntu-latest
+    needs: security-audit
+    if: failure() && contains(needs.security-audit.outputs.critical_vulns, 'true')
+    steps:
+      - name: Send critical security alert
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issue = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 CRITICAL SECURITY VULNERABILITIES DETECTED',
+              body: `## Critical Security Alert
+
+              Critical vulnerabilities have been detected in the ChittyOS system.
+
+              **Immediate Action Required:**
+              - Review security audit results
+              - Implement emergency patches
+              - Consider taking affected systems offline
+
+              **Run Details:**
+              - Branch: ${context.ref}
+              - Commit: ${context.sha}
+              - Run ID: ${context.runId}
+
+              [View Security Audit Results](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+              `,
+              labels: ['security', 'critical', 'urgent'],
+              assignees: ['security-team'] // Configure as needed
+            };
+
+            await github.rest.issues.create(issue);
+
+      - name: Send emergency notification
+        if: env.EMERGENCY_WEBHOOK_URL
+        run: |
+          curl -X POST "${{ secrets.EMERGENCY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "alert": "critical_security_vulnerability",
+              "repository": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }'

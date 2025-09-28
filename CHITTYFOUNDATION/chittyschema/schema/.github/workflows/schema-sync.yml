@@ -1,0 +1,554 @@
+name: ChittyChain Schema Sync
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'chittychain-production-schema.sql'
+      - 'notion-database-templates.md'
+      - 'workers/schema-api/**'
+      - 'frontend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chittychain-production-schema.sql'
+      - 'notion-database-templates.md'
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  SCHEMA_API_URL: https://schema.chitty.cc/api
+  NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+
+jobs:
+  # =====================================================
+  # VALIDATE SCHEMA CHANGES
+  # =====================================================
+  validate:
+    name: Validate Schema Changes
+    runs-on: ubuntu-latest
+    outputs:
+      schema_changed: ${{ steps.changes.outputs.schema }}
+      notion_changed: ${{ steps.changes.outputs.notion }}
+      api_changed: ${{ steps.changes.outputs.api }}
+      frontend_changed: ${{ steps.changes.outputs.frontend }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            schema:
+              - 'chittychain-production-schema.sql'
+            notion:
+              - 'notion-database-templates.md'
+            api:
+              - 'workers/schema-api/**'
+            frontend:
+              - 'frontend/**'
+
+      - name: Setup PostgreSQL for validation
+        if: steps.changes.outputs.schema == 'true'
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '15'
+          postgresql db: chittychain_test
+          postgresql user: chitty_user
+          postgresql password: chitty_pass
+
+      - name: Validate SQL Schema
+        if: steps.changes.outputs.schema == 'true'
+        run: |
+          echo "Validating PostgreSQL schema..."
+          PGPASSWORD=chitty_pass psql -h localhost -U chitty_user -d chittychain_test -f chittychain-production-schema.sql
+          echo "✅ Schema validation passed"
+
+      - name: Validate Notion Templates
+        if: steps.changes.outputs.notion == 'true'
+        run: |
+          echo "Validating Notion templates structure..."
+          # Check for required sections
+          grep -q "# ChittyChain Notion Database Templates" notion-database-templates.md
+          grep -q "## 🏛️ Database 1: People" notion-database-templates.md
+          grep -q "## 📍 Database 2: Places" notion-database-templates.md
+          grep -q "## 🏠 Database 3: Things" notion-database-templates.md
+          grep -q "## ⚡ Database 4: Events" notion-database-templates.md
+          grep -q "## ⚖️ Database 5: Authorities" notion-database-templates.md
+          echo "✅ Notion templates validation passed"
+
+      - name: Setup Node.js
+        if: steps.changes.outputs.api == 'true' || steps.changes.outputs.frontend == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies and validate API
+        if: steps.changes.outputs.api == 'true'
+        run: |
+          cd workers/schema-api
+          npm ci
+          npm run type-check
+          npm run lint
+          echo "✅ API validation passed"
+
+      - name: Install dependencies and validate Frontend
+        if: steps.changes.outputs.frontend == 'true'
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          echo "✅ Frontend validation passed"
+
+  # =====================================================
+  # GENERATE DOCUMENTATION
+  # =====================================================
+  generate-docs:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.schema_changed == 'true' || needs.validate.outputs.notion_changed == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install documentation tools
+        run: |
+          npm install -g @apidevtools/swagger-parser
+          npm install -g redoc-cli
+          npm install -g @gitiles/markdown-to-html
+
+      - name: Generate API documentation
+        run: |
+          cd workers/schema-api
+          # Validate OpenAPI spec
+          swagger-parser validate openapi.yaml
+
+          # Generate HTML documentation
+          redoc-cli build openapi.yaml --output ../../docs/api-reference.html
+
+          echo "✅ API documentation generated"
+
+      - name: Generate Schema Documentation
+        run: |
+          # Create comprehensive schema documentation
+          cat > docs/schema-overview.md << 'EOF'
+          # ChittyChain Schema Documentation
+
+          ## Overview
+          This documentation is automatically generated from the production schema.
+
+          **Last Updated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Git Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
+
+          ## Database Tables
+
+          EOF
+
+          # Extract table information from SQL schema
+          python3 << 'PYTHON'
+          import re
+          import sys
+
+          with open('chittychain-production-schema.sql', 'r') as f:
+              content = f.read()
+
+          # Extract CREATE TABLE statements
+          table_pattern = r'CREATE TABLE (\w+) \(\s*(.*?)\s*\);'
+          tables = re.findall(table_pattern, content, re.DOTALL | re.MULTILINE)
+
+          with open('docs/schema-tables.md', 'w') as f:
+              f.write("# Database Tables\n\n")
+
+              for table_name, columns_text in tables:
+                  f.write(f"## {table_name}\n\n")
+
+                  # Extract column definitions
+                  column_lines = [line.strip() for line in columns_text.split('\n') if line.strip()]
+                  columns = []
+
+                  for line in column_lines:
+                      if line.startswith('--') or line.startswith('CONSTRAINT') or line.startswith('UNIQUE') or line.startswith('CHECK'):
+                          continue
+                      if line.endswith(','):
+                          line = line[:-1]
+                      if ' ' in line:
+                          columns.append(line)
+
+                  if columns:
+                      f.write("| Column | Type | Description |\n")
+                      f.write("|--------|------|-------------|\n")
+
+                      for col in columns[:10]:  # Limit to first 10 columns
+                          parts = col.split()
+                          if len(parts) >= 2:
+                              col_name = parts[0]
+                              col_type = parts[1]
+                              f.write(f"| {col_name} | {col_type} | |\n")
+
+                  f.write("\n")
+
+          print("✅ Schema tables documentation generated")
+          PYTHON
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-docs
+          path: docs/
+          retention-days: 30
+
+  # =====================================================
+  # DEPLOY TO CLOUDFLARE
+  # =====================================================
+  deploy-api:
+    name: Deploy Schema API
+    runs-on: ubuntu-latest
+    needs: [validate, generate-docs]
+    if: github.ref == 'refs/heads/main' && needs.validate.outputs.api_changed == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to Cloudflare Workers
+        run: |
+          cd workers/schema-api
+          npm ci
+          wrangler deploy --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Update KV with new templates
+        run: |
+          # Upload Notion templates to KV
+          cd workers/schema-api
+
+          # Extract individual templates from markdown
+          python3 << 'PYTHON'
+          import json
+          import re
+
+          with open('../../notion-database-templates.md', 'r') as f:
+              content = f.read()
+
+          # Extract database sections
+          database_pattern = r'## 🏛️ Database \d+: (\w+) \((.*?)\)\n(.*?)(?=##|$)'
+          databases = re.findall(database_pattern, content, re.DOTALL)
+
+          templates = {}
+
+          for name, code, section in databases:
+              # Parse properties table
+              properties = {}
+              if '| Property | Type | Description |' in section:
+                  lines = section.split('\n')
+                  in_table = False
+                  for line in lines:
+                      if line.startswith('| Property | Type | Description |'):
+                          in_table = True
+                          continue
+                      if in_table and line.startswith('|') and not line.startswith('|-------'):
+                          parts = [p.strip() for p in line.split('|')[1:-1]]
+                          if len(parts) >= 3:
+                              prop_name, prop_type, description = parts[:3]
+                              properties[prop_name] = {
+                                  'type': prop_type.lower(),
+                                  'description': description
+                              }
+
+              templates[f'notion:{name.lower()}'] = {
+                  'title': f'{name} Database',
+                  'properties': properties,
+                  'entity_type': code,
+                  'generated_at': '$(date -u +"%Y-%m-%dT%H:%M:%SZ")',
+                  'version': '1.0.0'
+              }
+
+          # Save templates
+          for key, template in templates.items():
+              filename = f'template-{key.replace(":", "-")}.json'
+              with open(filename, 'w') as f:
+                  json.dump(template, f, indent=2)
+              print(f"Generated {filename}")
+
+          PYTHON
+
+          # Upload to KV
+          for template_file in template-*.json; do
+              template_name=$(basename "$template_file" .json | sed 's/template-//')
+              echo "Uploading $template_name..."
+              wrangler kv:key put --binding SCHEMA_TEMPLATES "$template_name" --path "$template_file"
+          done
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: [validate, generate-docs]
+    if: github.ref == 'refs/heads/main' && (needs.validate.outputs.frontend_changed == 'true' || needs.generate-docs.result == 'success')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-docs
+          path: frontend/public/docs/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build and deploy frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          npx @cloudflare/next-on-pages
+          npx wrangler pages deploy .vercel/output/static --project-name chittychain-schema --compatibility-date 2024-04-05
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  # =====================================================
+  # SYNC TO EXTERNAL SERVICES
+  # =====================================================
+  sync-external:
+    name: Sync to External Services
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-api, deploy-frontend]
+    if: github.ref == 'refs/heads/main' && always() && (needs.deploy-api.result == 'success' || needs.deploy-frontend.result == 'success')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Notify Schema API of Update
+        run: |
+          curl -X POST "$SCHEMA_API_URL/sync/github" \
+            -H "Authorization: Bearer ${{ secrets.SCHEMA_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "event": "schema_updated",
+              "commit": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "repository": "${{ github.repository }}",
+              "changes": {
+                "schema": ${{ needs.validate.outputs.schema_changed }},
+                "notion": ${{ needs.validate.outputs.notion_changed }},
+                "api": ${{ needs.validate.outputs.api_changed }},
+                "frontend": ${{ needs.validate.outputs.frontend_changed }}
+              },
+              "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            }'
+
+      - name: Update Notion Master Template
+        if: needs.validate.outputs.notion_changed == 'true' && env.NOTION_API_KEY != ''
+        run: |
+          # Create or update a master template page in Notion
+          curl -X POST "https://api.notion.com/v1/pages" \
+            -H "Authorization: Bearer $NOTION_API_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Notion-Version: 2022-06-28" \
+            -d '{
+              "parent": { "database_id": "${{ secrets.NOTION_TEMPLATES_DB_ID }}" },
+              "properties": {
+                "Title": {
+                  "title": [
+                    {
+                      "text": {
+                        "content": "ChittyChain Schema Templates - Updated $(date +%Y-%m-%d)"
+                      }
+                    }
+                  ]
+                },
+                "Version": {
+                  "rich_text": [
+                    {
+                      "text": {
+                        "content": "${{ github.sha }}"
+                      }
+                    }
+                  ]
+                },
+                "Status": {
+                  "select": {
+                    "name": "Updated"
+                  }
+                }
+              }
+            }'
+
+      - name: Create GitHub Release on Schema Changes
+        if: needs.validate.outputs.schema_changed == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: schema-v${{ github.run_number }}
+          release_name: Schema Update v${{ github.run_number }}
+          body: |
+            ## ChittyChain Schema Update
+
+            **Commit:** ${{ github.sha }}
+            **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+            ### Changes
+            - ✅ PostgreSQL schema updated
+            - ✅ Documentation regenerated
+            - ✅ API deployed to schema.chitty.cc
+            - ✅ Templates synced to KV storage
+
+            ### Downloads
+            - [Production Schema SQL](https://github.com/${{ github.repository }}/raw/${{ github.sha }}/chittychain-production-schema.sql)
+            - [Notion Templates](https://github.com/${{ github.repository }}/raw/${{ github.sha }}/notion-database-templates.md)
+
+            ### API Endpoints
+            - **Schema Generation:** https://schema.chitty.cc/api/schema/generate
+            - **Validation:** https://schema.chitty.cc/api/validate
+            - **Templates:** https://schema.chitty.cc/api/notion/templates
+          draft: false
+          prerelease: false
+
+  # =====================================================
+  # NOTIFY STAKEHOLDERS
+  # =====================================================
+  notify:
+    name: Notify Stakeholders
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-api, deploy-frontend, sync-external]
+    if: always() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Send Slack Notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        run: |
+          status_color="good"
+          if [[ "${{ needs.deploy-api.result }}" == "failure" || "${{ needs.deploy-frontend.result }}" == "failure" ]]; then
+            status_color="danger"
+          fi
+
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-type: application/json' \
+            -d '{
+              "text": "ChittyChain Schema Pipeline Update",
+              "attachments": [
+                {
+                  "color": "'$status_color'",
+                  "title": "Schema Sync Complete",
+                  "title_link": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                  "fields": [
+                    {
+                      "title": "Commit",
+                      "value": "${{ github.sha }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.ref_name }}",
+                      "short": true
+                    },
+                    {
+                      "title": "API Deploy",
+                      "value": "${{ needs.deploy-api.result }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Frontend Deploy",
+                      "value": "${{ needs.deploy-frontend.result }}",
+                      "short": true
+                    }
+                  ],
+                  "footer": "ChittyChain Schema CI/CD",
+                  "ts": $(date +%s)
+                }
+              ]
+            }'
+
+      - name: Send Discord Notification
+        if: env.DISCORD_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.DISCORD_WEBHOOK_URL }} \
+            -H 'Content-type: application/json' \
+            -d '{
+              "content": "🚀 ChittyChain Schema has been updated!",
+              "embeds": [
+                {
+                  "title": "Schema Deployment Complete",
+                  "url": "https://schema.chitty.cc",
+                  "color": 5814783,
+                  "fields": [
+                    {
+                      "name": "Changes",
+                      "value": "Schema: ${{ needs.validate.outputs.schema_changed }}\nNotion: ${{ needs.validate.outputs.notion_changed }}\nAPI: ${{ needs.validate.outputs.api_changed }}",
+                      "inline": true
+                    },
+                    {
+                      "name": "Status",
+                      "value": "✅ Live at schema.chitty.cc",
+                      "inline": true
+                    }
+                  ],
+                  "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+                }
+              ]
+            }'
+
+  # =====================================================
+  # CLEANUP AND MONITORING
+  # =====================================================
+  cleanup:
+    name: Cleanup and Monitor
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-frontend, sync-external, notify]
+    if: always()
+
+    steps:
+      - name: Health Check Deployed Services
+        run: |
+          echo "🔍 Running health checks..."
+
+          # Check API health
+          api_status=$(curl -s -o /dev/null -w "%{http_code}" https://schema.chitty.cc/api/health || echo "000")
+          echo "API Health: $api_status"
+
+          # Check frontend
+          frontend_status=$(curl -s -o /dev/null -w "%{http_code}" https://schema.chitty.cc || echo "000")
+          echo "Frontend Health: $frontend_status"
+
+          # Report health
+          if [[ "$api_status" == "200" && "$frontend_status" == "200" ]]; then
+            echo "✅ All services healthy"
+          else
+            echo "❌ Some services unhealthy"
+            exit 1
+          fi
+
+      - name: Update Deployment Status
+        run: |
+          # Log deployment success/failure
+          echo "Deployment completed at $(date -u)"
+          echo "Commit: ${{ github.sha }}"
+          echo "Pipeline: ${{ github.run_id }}"

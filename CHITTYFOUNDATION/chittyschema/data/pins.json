@@ -1,0 +1,34 @@
+[
+  {
+    "pin": "14-21-111-008-1006",
+    "address": "541 W Addison St",
+    "unit": "#3S",
+    "city": "Chicago",
+    "state": "IL",
+    "zip": "60613"
+  },
+  {
+    "pin": "14-28-122-017-1180",
+    "address": "550 W Surf St",
+    "unit": "C-211",
+    "city": "Chicago",
+    "state": "IL",
+    "zip": "60657"
+  },
+  {
+    "pin": "14-28-122-017-1091",
+    "address": "559 W Surf St",
+    "unit": "C-504",
+    "city": "Chicago",
+    "state": "IL",
+    "zip": "60657"
+  },
+  {
+    "pin": "14-16-300-032-1238",
+    "address": "4343 N Clarendon Ave",
+    "unit": "#1610",
+    "city": "Chicago",
+    "state": "IL",
+    "zip": "60613"
+  }
+]
