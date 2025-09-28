@@ -38,8 +38,7 @@ export async function chittyId(
   input: string,
 ): Promise<string> {
   const foundationUrl =
-    process.env.CHITTYID_FOUNDATION_URL ||
-    "https://chittyid-foundation.workers.dev";
+    process.env.CHITTYID_FOUNDATION_URL || "https://id.chitty.cc";
   const apiKey = process.env.CHITTY_ID_TOKEN || process.env.CHITTYID_API_KEY;
 
   if (!apiKey) {
@@ -56,7 +55,7 @@ export async function chittyId(
       body: JSON.stringify({
         entity: NAMESPACE_TO_ENTITY_MAP[namespace],
         name: input,
-        format: "simple", // Use simple format for compatibility
+        format: "official", // ONLY use official VV-G-LLL-SSSS-T-YM-C-X format
         metadata: {
           namespace,
           source: "chittyschema",
@@ -80,22 +79,27 @@ export async function chittyId(
 }
 
 /**
- * Validate ChittyID format (supports both Foundation formats)
+ * ABSOLUTE BLOCK: Validate ONLY official ChittyID format VV-G-LLL-SSSS-T-YM-C-X
  * @param id - The ChittyID to validate
  * @returns Promise<boolean> - Validation result from Foundation service
  */
 export async function isValidChittyId(id: string): Promise<boolean> {
   const foundationUrl =
-    process.env.CHITTYID_FOUNDATION_URL ||
-    "https://chittyid-foundation.workers.dev";
+    process.env.CHITTYID_FOUNDATION_URL || "https://id.chitty.cc";
   const apiKey = process.env.CHITTY_ID_TOKEN || process.env.CHITTYID_API_KEY;
 
-  // Basic format check first
-  const simplePattern = /^CHITTY-[A-Z]+-[0-9]{6}-[A-F0-9]{8}$/;
+  // ABSOLUTE BLOCK: Reject any CHITTY-* format immediately
+  if (id.startsWith("CHITTY-")) {
+    throw new Error(
+      "BLOCKED: CHITTY-* format is prohibited. Use official VV-G-LLL-SSSS-T-YM-C-X format only",
+    );
+  }
+
+  // ONLY accept official format: VV-G-LLL-SSSS-T-YM-C-X
   const officialPattern =
     /^(CP|CL|CT|CE)-[A-Z0-9]-[A-Z0-9]{3}-[0-9]{4}-[PLTE]-[0-9]{4}-[A-Z]-[0-9]{2}$/;
 
-  if (!simplePattern.test(id) && !officialPattern.test(id)) {
+  if (!officialPattern.test(id)) {
     return false;
   }
 
@@ -141,18 +145,34 @@ export function chittyIdSync(
 }
 
 /**
- * Extract namespace from a ChittyID
+ * Extract namespace from official ChittyID format VV-G-LLL-SSSS-T-YM-C-X
  * @param id - The ChittyID
  * @returns The namespace or null if invalid
  */
 export function extractNamespace(id: string): ChittyNamespace | null {
-  const match = id.match(
-    /^CHITTY-(PEO|PET|PROP|PLACE|AI|EVID|FACT|CASE|USER)-/,
-  );
-  return match ? (match[1] as ChittyNamespace) : null;
+  // ABSOLUTE BLOCK: Reject any CHITTY-* format immediately
+  if (id.startsWith("CHITTY-")) {
+    throw new Error(
+      "BLOCKED: CHITTY-* format is prohibited. Use official VV-G-LLL-SSSS-T-YM-C-X format only",
+    );
+  }
+
+  // Extract from official format VV-G-LLL-SSSS-T-YM-C-X
+  // VV maps to entity types: CP=PERSON, CL=PLACE, CT=PROP, CE=EVNT
+  const entityMap: Record<string, ChittyNamespace> = {
+    CP: "PEO", // Person
+    CL: "PLACE", // Location
+    CT: "PROP", // Thing/Property
+    CE: "EVNT", // Event
+  };
+
+  const match = id.match(/^(CP|CL|CT|CE)-/);
+  if (!match) return null;
+
+  return entityMap[match[1]] || null;
 }
 
-// Example usage:
-// chittyId('PROP', 'PIN:14-21-111-008-1006') -> 'CHITTY-PROP-1A2B3C4D5E6F7890'
-// chittyId('PEO', 'john.doe@example.com') -> 'CHITTY-PEO-9F8E7D6C5B4A3210'
-// chittyId('AI', 'claude-opus-4.1:instance:12345') -> 'CHITTY-AI-FEDCBA9876543210'
+// Example usage (OFFICIAL FORMAT ONLY):
+// chittyId('PROP', 'PIN:14-21-111-008-1006') -> 'CT-A-ABC-2024-T-0001-A-01'
+// chittyId('PEO', 'john.doe@example.com') -> 'CP-B-DEF-2024-P-0002-B-02'
+// chittyId('EVID', 'evidence-file.pdf') -> 'CT-C-GHI-2024-T-0003-C-03'
