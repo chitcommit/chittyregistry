@@ -2,6 +2,10 @@
  * ChittySchema MCP Agent
  * Implements Model Context Protocol for AI-powered evidence management
  * Compliant with Cloudflare MCP Agent API
+ *
+ * Authentication: ChittyAuth (OAuth & API keys)
+ * Routing: ChittyRouter (Ultimate Worker integration)
+ * ChittyID: Foundation service at id.chitty.cc
  */
 
 import { McpAgent, McpServer } from "@cloudflare/mcp-agent";
@@ -10,6 +14,7 @@ import { chittyId, isValidChittyId, extractNamespace } from "./lib/chittyid";
 import { ingestEvidence } from "./routes/service-orchestrated-evidence";
 import { createCase, getCaseById } from "./routes/cases";
 import { createFact, getFactsByCase } from "./routes/facts";
+import { ChittyAuthClient, MCPAuthMiddleware } from "./lib/chittyauth-client";
 
 // Define state schema for ChittySchema MCP Agent
 interface ChittySchemaState {
@@ -49,6 +54,29 @@ export class ChittySchemaMCP extends McpAgent<ChittySchemaState> {
     description:
       "Universal data framework for legal evidence management with ChittyID enforcement",
   });
+
+  // Authentication integration
+  private authClient: ChittyAuthClient;
+  private authMiddleware: MCPAuthMiddleware;
+
+  constructor(env?: any) {
+    super();
+
+    // Initialize ChittyAuth integration
+    this.authClient = new ChittyAuthClient({
+      authUrl: env?.CHITTYAUTH_URL || "https://auth.chitty.cc",
+      clientId: env?.CHITTYAUTH_CLIENT_ID || "",
+      scope: [
+        "schema:read",
+        "schema:write",
+        "evidence:manage",
+        "cases:manage",
+        "mcp:agent",
+      ],
+    });
+
+    this.authMiddleware = new MCPAuthMiddleware(this.authClient);
+  }
 
   // Initial state
   initialState: ChittySchemaState = {

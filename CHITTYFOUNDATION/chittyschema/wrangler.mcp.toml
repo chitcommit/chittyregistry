@@ -57,7 +57,11 @@ AI_MODEL_REASONING = "@cf/google/gemma-3-12b-it"
 SESSION_TIMEOUT = "3600" # 1 hour
 HEARTBEAT_INTERVAL = "30" # 30 seconds
 
-# Routes
+# Routes - MCP Portal Integration
+[[routes]]
+pattern = "portal.chitty.cc/schema/*"
+zone_name = "chitty.cc"
+
 [[routes]]
 pattern = "mcp-schema.chitty.cc/*"
 zone_name = "chitty.cc"
