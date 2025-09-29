@@ -1,0 +1,99 @@
+# Wrangler configuration for ChittyAuth Service
+
+name = "chittyauth"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+account_id = "bbf9fcd845e78035b7a135c481e88541"
+
+# Routes for authentication handling
+[[routes]]
+pattern = "auth.chitty.cc/*"
+zone_id = "bbf9fcd845e78035b7a135c481e88541"
+
+# KV Namespaces for session and token storage
+[[kv_namespaces]]
+binding = "AUTH_SESSIONS"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
+
+[[kv_namespaces]]
+binding = "AUTH_TOKENS"
+id = "your-auth-tokens-kv-id"
+preview_id = "your-preview-auth-tokens-kv-id"
+
+[[kv_namespaces]]
+binding = "AUTH_USERS"
+id = "your-auth-users-kv-id"
+preview_id = "your-preview-auth-users-kv-id"
+
+[[kv_namespaces]]
+binding = "AUTH_DEVICES"
+id = "your-auth-devices-kv-id"
+preview_id = "your-preview-auth-devices-kv-id"
+
+[[kv_namespaces]]
+binding = "AUTH_MCP_SERVERS"
+id = "your-auth-mcp-servers-kv-id"
+preview_id = "your-preview-auth-mcp-servers-kv-id"
+
+[[kv_namespaces]]
+binding = "AUTH_OAUTH_CODES"
+id = "your-auth-oauth-codes-kv-id"
+preview_id = "your-preview-auth-oauth-codes-kv-id"
+
+# Durable Objects for session management
+[[durable_objects.bindings]]
+name = "AUTH_SESSION_DO"
+class_name = "AuthSessionDO"
+
+# Environment variables for development
+[env.staging]
+name = "chittyauth-staging"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+CHITTYID_SERVICE_URL = "https://id.chitty.cc"
+REGISTRY_SERVICE_URL = "https://registry.chitty.cc"
+CHITTYOS_ACCOUNT_ID = "bbf9fcd845e78035b7a135c481e88541"
+CLOUDFLARE_TEAM_DOMAIN = "your-team-domain"
+CHITTYOS_DOMAIN = "chitty.cc"
+JWT_SECRET = "your-staging-jwt-secret"
+AUTH_SALT = "your-staging-auth-salt"
+SESSION_TIMEOUT = "3600"
+
+# Environment variables for production
+[env.production]
+name = "chittyauth-production"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+CHITTYID_SERVICE_URL = "https://id.chitty.cc"
+REGISTRY_SERVICE_URL = "https://registry.chitty.cc"
+CHITTYOS_ACCOUNT_ID = "bbf9fcd845e78035b7a135c481e88541"
+CLOUDFLARE_TEAM_DOMAIN = "your-team-domain"
+CHITTYOS_DOMAIN = "chitty.cc"
+JWT_SECRET = "your-production-jwt-secret"
+AUTH_SALT = "your-production-auth-salt"
+SESSION_TIMEOUT = "3600"
+
+# Service bindings for ChittyOS integration
+[[services]]
+binding = "CHITTYID_SERVICE"
+service = "chittyid"
+
+[[services]]
+binding = "REGISTRY_SERVICE"
+service = "chittyregistry"
+
+# Analytics and logging
+[observability]
+enabled = true
+
+[build]
+command = "npm run build"
+cwd = "."
+
+# Deployment configuration
+[triggers]
+crons = ["0 */6 * * *"] # Token cleanup every 6 hours
