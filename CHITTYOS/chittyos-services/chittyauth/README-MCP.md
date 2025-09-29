@@ -1,6 +1,6 @@
 # ChittyAuth MCP Agent
 
-A **real authentication service** for the ChittyOS ecosystem, implemented as a stateful MCP (Model Context Protocol) Agent using Cloudflare's MCP Agent API.
+A **real authentication service** for the ChittyOS ecosystem, implemented as a stateful MCP (Model Context Protocol) Agent with **complete OAuth2 and Portal integration** for cross-synced MCPs in Cloudflare account 121.
 
 ## Overview
 
