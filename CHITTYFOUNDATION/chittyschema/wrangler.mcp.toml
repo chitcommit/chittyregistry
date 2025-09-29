@@ -5,7 +5,7 @@ name = "chittyschema-mcp-agent"
 main = "src/mcp-agent.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-account_id = "bbf9fcd845e78035b7a135c481e88541" # ChittyCorp LLC - Production Account
+account_id = "bbf9fcd845e78035b7a135c481e88541" # ChittyCorp LLC - Production Account (nick@chittycorp.com)
 
 # AI Binding for intelligent operations
 [ai]

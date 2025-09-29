@@ -1,11 +1,14 @@
 #!/bin/bash
 
 # Deploy ChittySchema MCP Agent with 1Password Integration
+# ChittyCorp LLC Account: bbf9fcd845e78035b7a135c481e88541 (nick@chittycorp.com)
 # Uses ChittyCorp LLC Global API Key for ChittyID Foundation service
 
 set -e
 
-echo "🚀 Deploying ChittySchema MCP Agent with 1Password secrets..."
+echo "🚀 Deploying ChittySchema MCP Agent with ChittyCorp LLC credentials..."
+echo "📧 Account: nick@chittycorp.com"
+echo "🏢 Organization: ChittyCorp LLC"
 
 # Check if 1Password CLI is available
 if ! command -v op &> /dev/null; then

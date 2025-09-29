@@ -264,6 +264,14 @@ CHITTYVERIFY_SERVICE_URL=https://verify.chitty.cc
 CHITTYCHECK_SERVICE_URL=https://check.chitty.cc
 ```
 
+## Account Management
+
+**ChittyCorp LLC Account Details:**
+- **Production Account ID**: `bbf9fcd845e78035b7a135c481e88541`
+- **Account Email**: `nick@chittycorp.com`
+- **Global API Key**: `op://Private/gxyne23yqngvk2nzjwl62uakx4/ChittyCorp LLC/global_api_key`
+- **MCP Portal Account ID**: `0bc21e3a5a9de1a4cc843be9c3e98121` (Account 121)
+
 ## Summary
 
 **Complete Integration Flow:**
@@ -273,4 +281,4 @@ CHITTYCHECK_SERVICE_URL=https://check.chitty.cc
 4. **Foundation Services** handle ChittyID generation, verification, and compliance
 5. **Audit & Compliance** ensures all operations are logged and ChittyID format is enforced
 
-This architecture provides secure, scalable AI access to ChittySchema while maintaining strict ChittyOS compliance and service orchestration patterns.
+This architecture provides secure, scalable AI access to ChittySchema while maintaining strict ChittyOS compliance and service orchestration patterns under the ChittyCorp LLC organizational umbrella.
