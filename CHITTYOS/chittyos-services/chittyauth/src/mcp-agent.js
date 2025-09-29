@@ -678,3 +678,50 @@ export class ChittyAuthMCP {
     return this.currentState || {};
   }
 }
+
+// Export default for Cloudflare Workers
+export default {
+  async fetch(request, env, ctx) {
+    const agent = new ChittyAuthMCP();
+    agent.env = env;
+    agent.ctx = ctx;
+    await agent.init();
+
+    // Handle MCP protocol over WebSocket
+    if (request.headers.get("Upgrade") === "websocket") {
+      return agent.handleWebSocket(request);
+    }
+
+    // Handle HTTP requests for health check
+    if (new URL(request.url).pathname === "/health") {
+      return new Response(
+        JSON.stringify({
+          status: "healthy",
+          service: "ChittyAuth MCP Agent",
+          version: "1.0.0",
+          account: "0bc21e3a5a9de1a4cc843be9c3e98121",
+          capabilities: [
+            "generate_api_key",
+            "validate_api_key",
+            "check_permission",
+            "generate_jwt",
+            "validate_jwt",
+            "grant_authorization",
+            "list_sessions",
+            "mcp_portal_authenticate",
+            "create_linked_app_oauth",
+            "exchange_oauth_tokens",
+            "validate_mcp_token",
+          ],
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    return new Response("ChittyAuth MCP Agent - Connect via MCP protocol", {
+      status: 200,
+    });
+  },
+};

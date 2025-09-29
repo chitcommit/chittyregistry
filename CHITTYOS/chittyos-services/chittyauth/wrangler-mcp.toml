@@ -5,7 +5,7 @@ name = "chittyauth-mcp"
 main = "src/mcp-agent.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat", "web_socket_compression"]
-account_id = "bbf9fcd845e78035b7a135c481e88541"
+account_id = "0bc21e3a5a9de1a4cc843be9c3e98121"
 
 # MCP Agent configuration
 [agents]
@@ -19,18 +19,15 @@ zone_id = "bbf9fcd845e78035b7a135c481e88541"
 # KV Namespaces for persistent storage
 [[kv_namespaces]]
 binding = "AUTH_SESSIONS"
-id = "your-kv-namespace-id"
-preview_id = "your-preview-kv-namespace-id"
+id = "dd1dff525a27431aa47844eb364e6606"
 
 [[kv_namespaces]]
 binding = "AUTH_TOKENS"
-id = "your-auth-tokens-kv-id"
-preview_id = "your-preview-auth-tokens-kv-id"
+id = "0189885179514d639776ec3bfe8f8274"
 
 [[kv_namespaces]]
 binding = "API_KEYS"
-id = "your-api-keys-kv-id"
-preview_id = "your-preview-api-keys-kv-id"
+id = "41593bb3096745c0b59e0bf6d5cbae20"
 
 # Durable Objects for stateful session management
 [[durable_objects.bindings]]
