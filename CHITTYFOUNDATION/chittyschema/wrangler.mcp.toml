@@ -22,8 +22,10 @@ database_id = "chittyschema-mcp-db"
 binding = "PLATFORM_CACHE"
 id = "d66c1e709c72456fa21aaa0d02f2db5e"
 
-# R2 Storage disabled - not enabled in account
-# Evidence will be stored in database or external service
+# KV Namespace for evidence storage - using PLATFORM_KV as fallback for R2
+[[kv_namespaces]]
+binding = "EVIDENCE_STORAGE"
+id = "d52d89c1eebd402b95719161d311e7df"
 
 # Durable Objects for state management
 [[durable_objects.bindings]]
@@ -109,7 +111,9 @@ database_id = "chittyschema-mcp-db-prod"
 binding = "PLATFORM_CACHE"
 id = "d66c1e709c72456fa21aaa0d02f2db5e"
 
-# R2 Storage disabled - not enabled in account
+[[env.production.kv_namespaces]]
+binding = "EVIDENCE_STORAGE"
+id = "d52d89c1eebd402b95719161d311e7df"
 
 # Analytics for production metrics
 [[env.production.analytics_engine_datasets]]
