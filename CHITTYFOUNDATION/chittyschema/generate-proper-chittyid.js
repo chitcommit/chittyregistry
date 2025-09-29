@@ -8,8 +8,7 @@
 
 async function requestChittyID(namespace, description = "") {
   const foundationUrl =
-    process.env.CHITTYID_FOUNDATION_URL ||
-    "https://chittyid-foundation.workers.dev";
+    process.env.CHITTYID_FOUNDATION_URL || "https://id.chitty.cc";
   const apiKey = process.env.CHITTY_ID_TOKEN || process.env.CHITTYID_API_KEY;
 
   if (!apiKey) {
@@ -26,7 +25,7 @@ async function requestChittyID(namespace, description = "") {
       body: JSON.stringify({
         entity: "THING", // Map namespace to Foundation entity type
         name: `${namespace}-${description}`,
-        format: "simple", // Use simple format for compatibility
+        format: "official", // ONLY use official VV-G-LLL-SSSS-T-YM-C-X format
         metadata: {
           namespace,
           description,
