@@ -17,15 +17,13 @@ binding = "DB"
 database_name = "chittyschema-mcp-state"
 database_id = "chittyschema-mcp-db"
 
-# KV Namespace for caching
+# KV Namespace for caching - using PLATFORM_CACHE (shared with ChittyRouter)
 [[kv_namespaces]]
-binding = "CACHE"
-id = "chittyschema-mcp-cache"
+binding = "PLATFORM_CACHE"
+id = "d66c1e709c72456fa21aaa0d02f2db5e"
 
-# R2 Bucket for evidence storage
-[[r2_buckets]]
-binding = "EVIDENCE_STORAGE"
-bucket_name = "chittyschema-evidence"
+# R2 Storage disabled - not enabled in account
+# Evidence will be stored in database or external service
 
 # Durable Objects for state management
 [[durable_objects.bindings]]
@@ -108,12 +106,10 @@ database_name = "chittyschema-mcp-state-prod"
 database_id = "chittyschema-mcp-db-prod"
 
 [[env.production.kv_namespaces]]
-binding = "CACHE"
-id = "chittyschema-mcp-cache-prod"
+binding = "PLATFORM_CACHE"
+id = "d66c1e709c72456fa21aaa0d02f2db5e"
 
-[[env.production.r2_buckets]]
-binding = "EVIDENCE_STORAGE"
-bucket_name = "chittyschema-evidence-prod"
+# R2 Storage disabled - not enabled in account
 
 # Analytics for production metrics
 [[env.production.analytics_engine_datasets]]
