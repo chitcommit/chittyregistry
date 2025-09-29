@@ -267,10 +267,10 @@ CHITTYCHECK_SERVICE_URL=https://check.chitty.cc
 ## Account Management
 
 **ChittyCorp LLC Account Details:**
-- **Production Account ID**: `bbf9fcd845e78035b7a135c481e88541`
+- **MCP Portal Account ID**: `0bc21e3a5a9de1a4cc843be9c3e98121` (Account 121 - Clean MCP Integration)
 - **Account Email**: `nick@chittycorp.com`
 - **Global API Key**: `op://Private/gxyne23yqngvk2nzjwl62uakx4/ChittyCorp LLC/global_api_key`
-- **MCP Portal Account ID**: `0bc21e3a5a9de1a4cc843be9c3e98121` (Account 121)
+- **Legacy Account**: `bbf9fcd845e78035b7a135c481e88541` (Old mess account - NOT USED)
 
 ## Summary
 

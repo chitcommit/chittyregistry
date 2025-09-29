@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Deploy ChittySchema MCP Agent with 1Password Integration
-# ChittyCorp LLC Account: bbf9fcd845e78035b7a135c481e88541 (nick@chittycorp.com)
+# ChittyCorp LLC Account: 0bc21e3a5a9de1a4cc843be9c3e98121 (Account 121 - Clean MCP Portal)
 # Uses ChittyCorp LLC Global API Key for ChittyID Foundation service
 
 set -e
 
-echo "🚀 Deploying ChittySchema MCP Agent with ChittyCorp LLC credentials..."
+echo "🚀 Deploying ChittySchema MCP Agent with Account 121 (Clean MCP Portal)..."
 echo "📧 Account: nick@chittycorp.com"
 echo "🏢 Organization: ChittyCorp LLC"
+echo "✅ Using clean Account 121 (NOT the old mess account 541)"
 
 # Check if 1Password CLI is available
 if ! command -v op &> /dev/null; then
