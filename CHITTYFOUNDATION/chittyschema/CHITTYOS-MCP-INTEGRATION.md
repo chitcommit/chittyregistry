@@ -256,7 +256,8 @@ CHITTYAUTH_CLIENT_SECRET=***
 
 # ChittyID Foundation
 CHITTYID_FOUNDATION_URL=https://id.chitty.cc
-CHITTY_ID_TOKEN=***
+CHITTY_ID_TOKEN=*** # ChittyCorp LLC Global API Key from 1Password
+# 1Password ref: op://Private/gxyne23yqngvk2nzjwl62uakx4/ChittyCorp LLC/global_api_key
 
 # Service Orchestration
 CHITTYVERIFY_SERVICE_URL=https://verify.chitty.cc

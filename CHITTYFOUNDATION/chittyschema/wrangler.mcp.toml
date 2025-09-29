@@ -5,7 +5,7 @@ name = "chittyschema-mcp-agent"
 main = "src/mcp-agent.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-account_id = "bbf9fcd845e78035b7a135c481e88541" # ChittyCorp LLC
+account_id = "bbf9fcd845e78035b7a135c481e88541" # ChittyCorp LLC - Production Account
 
 # AI Binding for intelligent operations
 [ai]
@@ -146,7 +146,11 @@ cpu_ms = 50  # 50ms for MCP operations
 mode = "smart"
 
 # Secrets (to be set via wrangler secret put)
-# CHITTY_ID_TOKEN - Authentication token for ChittyID Foundation service
+# CHITTY_ID_TOKEN - ChittyCorp LLC Global API Key: op://Private/gxyne23yqngvk2nzjwl62uakx4/ChittyCorp LLC/global_api_key
 # DATABASE_URL - PostgreSQL connection string for primary database
 # NOTION_TOKEN - Notion API token for sync operations
 # OPENAI_API_KEY - Optional OpenAI API key for enhanced AI operations
+
+# Production secrets via 1Password
+[env.production.vars]
+CHITTY_ID_TOKEN_REF = "op://Private/gxyne23yqngvk2nzjwl62uakx4/ChittyCorp LLC/global_api_key"
