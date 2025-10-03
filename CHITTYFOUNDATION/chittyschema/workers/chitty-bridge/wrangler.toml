@@ -3,7 +3,7 @@ name = "chitty-bridge"
 main = "src/index.ts"
 compatibility_date = "2024-09-15"
 workers_dev = true
-account_id = "bbf9fcd845e78035b7a135c481e88541"
+account_id = "0bc21e3a5a9de1a4cc843be9c3e98121"  # Account 121 - Clean MCP Portal (nick@chittycorp.com)
 
 # KV Namespaces for state management and caching (will be created after initial deployment)
 # kv_namespaces = [
