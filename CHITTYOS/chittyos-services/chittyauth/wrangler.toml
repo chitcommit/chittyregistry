@@ -6,38 +6,18 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 account_id = "0bc21e3a5a9de1a4cc843be9c3e98121"
 
-# Routes for authentication handling (removed for now)
-
 # KV Namespaces for session and token storage
 [[kv_namespaces]]
 binding = "AUTH_SESSIONS"
-id = "your-kv-namespace-id"
-preview_id = "your-preview-kv-namespace-id"
+id = "dd1dff525a27431aa47844eb364e6606"
 
 [[kv_namespaces]]
 binding = "AUTH_TOKENS"
-id = "your-auth-tokens-kv-id"
-preview_id = "your-preview-auth-tokens-kv-id"
+id = "0189885179514d639776ec3bfe8f8274"
 
 [[kv_namespaces]]
-binding = "AUTH_USERS"
-id = "your-auth-users-kv-id"
-preview_id = "your-preview-auth-users-kv-id"
-
-[[kv_namespaces]]
-binding = "AUTH_DEVICES"
-id = "your-auth-devices-kv-id"
-preview_id = "your-preview-auth-devices-kv-id"
-
-[[kv_namespaces]]
-binding = "AUTH_MCP_SERVERS"
-id = "your-auth-mcp-servers-kv-id"
-preview_id = "your-preview-auth-mcp-servers-kv-id"
-
-[[kv_namespaces]]
-binding = "AUTH_OAUTH_CODES"
-id = "your-auth-oauth-codes-kv-id"
-preview_id = "your-preview-auth-oauth-codes-kv-id"
+binding = "API_KEYS"
+id = "41593bb3096745c0b59e0bf6d5cbae20"
 
 # Durable Objects for session management (removed for now)
 
@@ -49,26 +29,26 @@ name = "chittyauth-staging"
 ENVIRONMENT = "staging"
 CHITTYID_SERVICE_URL = "https://id.chitty.cc"
 REGISTRY_SERVICE_URL = "https://registry.chitty.cc"
-CHITTYOS_ACCOUNT_ID = "bbf9fcd845e78035b7a135c481e88541"
-CLOUDFLARE_TEAM_DOMAIN = "your-team-domain"
+CHITTYOS_ACCOUNT_ID = "0bc21e3a5a9de1a4cc843be9c3e98121"
+CLOUDFLARE_TEAM_DOMAIN = "chittycorp"
 CHITTYOS_DOMAIN = "chitty.cc"
-JWT_SECRET = "your-staging-jwt-secret"
-AUTH_SALT = "your-staging-auth-salt"
 SESSION_TIMEOUT = "3600"
 
 # Environment variables for production
 [env.production]
 name = "chittyauth-production"
 
+[[env.production.routes]]
+pattern = "auth.chitty.cc/*"
+zone_name = "chitty.cc"
+
 [env.production.vars]
 ENVIRONMENT = "production"
 CHITTYID_SERVICE_URL = "https://id.chitty.cc"
 REGISTRY_SERVICE_URL = "https://registry.chitty.cc"
-CHITTYOS_ACCOUNT_ID = "bbf9fcd845e78035b7a135c481e88541"
-CLOUDFLARE_TEAM_DOMAIN = "your-team-domain"
+CHITTYOS_ACCOUNT_ID = "0bc21e3a5a9de1a4cc843be9c3e98121"
+CLOUDFLARE_TEAM_DOMAIN = "chittycorp"
 CHITTYOS_DOMAIN = "chitty.cc"
-JWT_SECRET = "your-production-jwt-secret"
-AUTH_SALT = "your-production-auth-salt"
 SESSION_TIMEOUT = "3600"
 
 # Service bindings for ChittyOS integration

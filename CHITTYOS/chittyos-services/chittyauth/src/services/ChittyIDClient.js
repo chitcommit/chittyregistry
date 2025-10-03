@@ -108,9 +108,11 @@ export class ChittyIDClient {
    * Validate ChittyID format locally
    */
   validateFormat(chitty_id) {
-    // ChittyID format: CHITTY-ENTITY-SEQUENCE-CHECKSUM
-    // Example: CHITTY-PEO-USER123-ABC
-    const pattern = /^CHITTY-[A-Z]+-[A-Z0-9]+-[A-Z0-9]+$/;
+    // Official Format: VV-G-LLL-SSSS-T-YM-C-X
+    // VV = 2-letter version, G = generation, LLL = 3-letter location
+    // SSSS = 4-digit sequence, T = type, YM = year-month, C = category, X = checksum
+    const pattern =
+      /^[A-Z]{2}-[A-Z]-[A-Z]{3}-[0-9]{4}-[A-Z]-[0-9]{2}-[A-Z]-[0-9A-Z]$/;
     return pattern.test(chitty_id);
   }
 
