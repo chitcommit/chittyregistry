@@ -57,6 +57,7 @@
   "dependencies": {
     "@cloudflare/agents": "^0.0.16",
     "@jest/globals": "^30.2.0",
+    "@modelcontextprotocol/sdk": "^1.19.1",
     "@notionhq/client": "^5.1.0",
     "axios": "^1.12.2",
     "chalk": "^5.6.2",

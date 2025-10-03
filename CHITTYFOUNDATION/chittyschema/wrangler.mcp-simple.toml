@@ -1,0 +1,50 @@
+name = "chittyschema-mcp"
+main = "src/mcp-agent.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Account 121 - Clean MCP Portal Integration (nick@chittycorp.com)
+account_id = "0bc21e3a5a9de1a4cc843be9c3e98121"
+
+# No external config needed - using rules instead
+[build.upload]
+rules = [
+  { type = "CompiledWasm", globs = ["**/*.wasm"], fallthrough = true }
+]
+
+# Mark Cloudflare built-ins as external
+[[unsafe.bindings]]
+name = "agents"
+type = "external"
+
+# KV Namespaces for storage
+[[kv_namespaces]]
+binding = "PLATFORM_CACHE"
+id = "d66c1e709c72456fa21aaa0d02f2db5e"
+
+[[kv_namespaces]]
+binding = "EVIDENCE_STORAGE"
+id = "d52d89c1eebd402b95719161d311e7df"
+
+# Durable Object for MCP Agent state
+[[durable_objects.bindings]]
+name = "CHITTYSCHEMA_MCP"
+class_name = "ChittySchemaMCP"
+script_name = "chittyschema-mcp"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ChittySchemaMCP"]
+
+# Environment variables
+[vars]
+SERVICE_NAME = "ChittySchema-MCP"
+VERSION = "2.0.0"
+CHITTYID_FOUNDATION_URL = "https://id.chitty.cc"
+CHITTY_REGISTRY_URL = "https://registry.chitty.cc"
+CHITTYAUTH_URL = "https://auth.chitty.cc"
+MCP_PROTOCOL_VERSION = "2024-11-05"
+
+# Cloudflare Workers AI
+[ai]
+binding = "AI"

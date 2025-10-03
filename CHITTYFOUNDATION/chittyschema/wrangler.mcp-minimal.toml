@@ -1,0 +1,26 @@
+name = "chittyschema-mcp"
+main = "src/mcp-agent.ts"
+compatibility_date = "2024-11-05"
+
+# Account 121 - Clean MCP Portal Integration
+account_id = "0bc21e3a5a9de1a4cc843be9c3e98121"
+
+# KV storage
+[[kv_namespaces]]
+binding = "PLATFORM_CACHE"
+id = "d66c1e709c72456fa21aaa0d02f2db5e"
+
+[[kv_namespaces]]
+binding = "EVIDENCE_STORAGE"
+id = "d52d89c1eebd402b95719161d311e7df"
+
+# Environment variables
+[vars]
+SERVICE_NAME = "ChittySchema-MCP"
+VERSION = "2.0.0"
+CHITTYID_FOUNDATION_URL = "https://id.chitty.cc"
+CHITTYAUTH_URL = "https://auth.chitty.cc"
+
+# Cloudflare AI
+[ai]
+binding = "AI"

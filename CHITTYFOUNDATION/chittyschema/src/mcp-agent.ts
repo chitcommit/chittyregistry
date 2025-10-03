@@ -8,7 +8,8 @@
  * ChittyID: Foundation service at id.chitty.cc
  */
 
-import { McpAgent, McpServer } from "@cloudflare/mcp-agent";
+import { McpAgent } from "agents/mcp";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { chittyId, isValidChittyId, extractNamespace } from "./lib/chittyid";
 import { ingestEvidence } from "./routes/service-orchestrated-evidence";
@@ -46,7 +47,7 @@ interface ChittySchemaState {
   };
 }
 
-export class ChittySchemaMCP extends McpAgent<ChittySchemaState> {
+export class ChittySchemaMCP extends McpAgent {
   // Server metadata
   server = new McpServer({
     name: "ChittySchema",
