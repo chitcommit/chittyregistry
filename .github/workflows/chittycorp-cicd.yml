@@ -1,4 +1,4 @@
-name: Account 121 - Clean MCP Portal CI/CD
+name: ChittyCorp CI/CD
 
 on:
   push:
@@ -36,7 +36,7 @@ on:
           - production
 
 env:
-  CLOUDFLARE_ACCOUNT_ID: "0bc21e3a5a9de1a4cc843be9c3e98121"  # Account 121 - Clean MCP Portal
+  CLOUDFLARE_ACCOUNT_ID: "0bc21e3a5a9de1a4cc843be9c3e98121"  # ChittyCorp LLC CI/CD (Account 121)
   NODE_VERSION: "20"
 
 jobs:
@@ -89,7 +89,7 @@ jobs:
         working-directory: CHITTYOS/chittyos-services/chittyauth
         run: npx wrangler deploy --env ${{ github.event.inputs.environment || 'staging' }}
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_121 }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CHITTYCORP_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-chittyregistry:
@@ -118,7 +118,7 @@ jobs:
         working-directory: CHITTYOS/chittyos-services/chittyregistry
         run: npx wrangler deploy --env ${{ github.event.inputs.environment || 'staging' }}
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_121 }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CHITTYCORP_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-chittyrouter:
@@ -147,7 +147,7 @@ jobs:
         working-directory: CHITTYOS/chittyos-services/chittyrouter
         run: npx wrangler deploy --env ${{ github.event.inputs.environment || 'staging' }}
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_121 }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CHITTYCORP_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-chittyid:
@@ -176,7 +176,7 @@ jobs:
         working-directory: CHITTYFOUNDATION/chittyid
         run: npx wrangler deploy --env ${{ github.event.inputs.environment || 'staging' }}
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_121 }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CHITTYCORP_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-chittyschema:
@@ -205,7 +205,7 @@ jobs:
         working-directory: CHITTYFOUNDATION/chittyschema
         run: npx wrangler deploy --config wrangler.mcp-minimal.toml
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_121 }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CHITTYCORP_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
 
   deploy-chittychat:
@@ -234,7 +234,7 @@ jobs:
         working-directory: chittychat
         run: npx wrangler deploy --config wrangler.optimized.toml --env ${{ github.event.inputs.environment || 'staging' }}
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_121 }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CHITTYCORP_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
 
   notify-registry:
@@ -249,7 +249,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.CHITTY_ID_TOKEN }}" \
             -d '{
-              "account": "Account-121-Clean-MCP-Portal",
+              "account": "ChittyCorp-CI/CD",
               "accountId": "0bc21e3a5a9de1a4cc843be9c3e98121",
               "email": "nick@chittycorp.com",
               "environment": "${{ github.event.inputs.environment || 'staging' }}",
