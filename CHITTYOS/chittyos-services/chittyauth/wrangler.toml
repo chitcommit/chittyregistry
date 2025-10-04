@@ -42,6 +42,18 @@ name = "chittyauth-production"
 pattern = "auth.chitty.cc/*"
 zone_name = "chitty.cc"
 
+[[env.production.kv_namespaces]]
+binding = "AUTH_SESSIONS"
+id = "dd1dff525a27431aa47844eb364e6606"
+
+[[env.production.kv_namespaces]]
+binding = "AUTH_TOKENS"
+id = "0189885179514d639776ec3bfe8f8274"
+
+[[env.production.kv_namespaces]]
+binding = "API_KEYS"
+id = "41593bb3096745c0b59e0bf6d5cbae20"
+
 [env.production.vars]
 ENVIRONMENT = "production"
 CHITTYID_SERVICE_URL = "https://id.chitty.cc"
@@ -51,14 +63,7 @@ CLOUDFLARE_TEAM_DOMAIN = "chittycorp"
 CHITTYOS_DOMAIN = "chitty.cc"
 SESSION_TIMEOUT = "3600"
 
-# Service bindings for ChittyOS integration
-[[services]]
-binding = "CHITTYID_SERVICE"
-service = "chittyid"
-
-[[services]]
-binding = "REGISTRY_SERVICE"
-service = "chittyregistry"
+# Service bindings removed - using HTTP client with @chittyos/chittyid-client
 
 # Analytics and logging
 [observability]

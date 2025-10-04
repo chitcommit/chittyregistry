@@ -41,14 +41,7 @@ script_name = "chittyauth-mcp"
 # database_name = "chittyauth-state"
 # database_id = "your-d1-database-id"
 
-# Service bindings for ChittyOS integration
-[[services]]
-binding = "CHITTYID_SERVICE"
-service = "chittyid"
-
-[[services]]
-binding = "REGISTRY_SERVICE"
-service = "chittyregistry"
+# Service bindings removed - using HTTP client with @chittyos/chittyid-client
 
 # Environment variables for development
 [env.staging]
@@ -72,9 +65,21 @@ name = "chittyauth-mcp-production"
 pattern = "auth-mcp.chitty.cc/*"
 zone_name = "chitty.cc"
 
+[[env.production.kv_namespaces]]
+binding = "AUTH_SESSIONS"
+id = "dd1dff525a27431aa47844eb364e6606"
+
+[[env.production.kv_namespaces]]
+binding = "AUTH_TOKENS"
+id = "0189885179514d639776ec3bfe8f8274"
+
+[[env.production.kv_namespaces]]
+binding = "API_KEYS"
+id = "41593bb3096745c0b59e0bf6d5cbae20"
+
 [env.production.vars]
 ENVIRONMENT = "production"
-CHITTYID_ENDPOINT = "https://id.chitty.cc"
+CHITTYID_SERVICE_URL = "https://id.chitty.cc/v1"
 REGISTRY_ENDPOINT = "https://registry.chitty.cc"
 CHITTYAUTH_URL = "https://auth.chitty.cc"
 CLOUDFLARE_TEAM_DOMAIN = "chittycorp"

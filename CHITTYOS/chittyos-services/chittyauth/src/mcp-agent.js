@@ -9,7 +9,7 @@ import { z } from "zod";
 import { SignJWT, jwtVerify } from "jose";
 import { AuthorizationService } from "./services/AuthorizationService.js";
 import { APIKeyService } from "./services/APIKeyService.js";
-import { ChittyIDClient } from "./services/ChittyIDClient.js";
+import ChittyIDClient from "@chittyos/chittyid-client";
 
 export class ChittyAuthMCP {
   server = new McpServer({
@@ -21,7 +21,10 @@ export class ChittyAuthMCP {
 
   async init() {
     // Initialize services with environment bindings
-    this.chittyIDClient = new ChittyIDClient(this.env);
+    this.chittyIDClient = new ChittyIDClient({
+      serviceUrl: this.env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: this.env.CHITTYID_API_KEY,
+    });
     this.apiKeyService = new APIKeyService(this.env);
     this.authorizationService = new AuthorizationService(this.env);
 
@@ -252,8 +255,9 @@ export class ChittyAuthMCP {
       async ({ chitty_id, name, scopes }) => {
         try {
           // Verify ChittyID with actual ChittyID service
-          const isValid = await this.chittyIDClient.verify(chitty_id);
-          if (!isValid) {
+          const validationResult =
+            await this.chittyIDClient.validate(chitty_id);
+          if (!validationResult.valid) {
             return {
               content: [
                 {
@@ -430,8 +434,9 @@ export class ChittyAuthMCP {
       async ({ chitty_id, expires_in = "1h", claims = {} }) => {
         try {
           // Verify ChittyID first
-          const isValid = await this.chittyIDClient.verify(chitty_id);
-          if (!isValid) {
+          const validationResult =
+            await this.chittyIDClient.validate(chitty_id);
+          if (!validationResult.valid) {
             return {
               content: [
                 {

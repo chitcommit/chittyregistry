@@ -19,7 +19,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { AuthorizationService } from "./services/AuthorizationService.js";
 import { APIKeyService } from "./services/APIKeyService.js";
 import { RegistryClient } from "./services/RegistryClient.js";
-import { ChittyIDClient } from "./services/ChittyIDClient.js";
+import ChittyIDClient from "@chittyos/chittyid-client";
 
 const app = new Hono();
 
@@ -43,13 +43,16 @@ app.post("/v1/api-keys/generate", async (c) => {
 
   try {
     // Initialize services
-    const chittyIDClient = new ChittyIDClient(env);
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
     const apiKeyService = new APIKeyService(env);
     const authorizationService = new AuthorizationService(env);
 
     // 1. Verify ChittyID with ChittyID service
-    const isValidChittyID = await chittyIDClient.verify(chitty_id);
-    if (!isValidChittyID) {
+    const validationResult = await chittyIDClient.validate(chitty_id);
+    if (!validationResult.valid) {
       return c.json(
         {
           success: false,
@@ -145,14 +148,17 @@ app.post("/v1/authorizations/grant", async (c) => {
 
   try {
     // Initialize services
-    const chittyIDClient = new ChittyIDClient(env);
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
     const authorizationService = new AuthorizationService(env);
     const registryClient = new RegistryClient(env);
 
     // 1. Verify both ChittyIDs
     const [isValidRequestor, isValidGrantor] = await Promise.all([
-      chittyIDClient.verify(requestor_chitty_id),
-      chittyIDClient.verify(granted_by),
+      chittyIDClient.validate(requestor_chitty_id).then((r) => r.valid),
+      chittyIDClient.validate(granted_by).then((r) => r.valid),
     ]);
 
     if (!isValidRequestor || !isValidGrantor) {
@@ -283,11 +289,14 @@ app.post("/v1/tokens/generate", async (c) => {
   const { chitty_id, expires_in } = await c.req.json();
 
   try {
-    const chittyIDClient = new ChittyIDClient(env);
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
 
     // Verify ChittyID
-    const isValid = await chittyIDClient.verify(chitty_id);
-    if (!isValid) {
+    const validationResult = await chittyIDClient.validate(chitty_id);
+    if (!validationResult.valid) {
       return c.json(
         {
           success: false,
@@ -362,8 +371,11 @@ app.post("/v1/auth/register", async (c) => {
 
   try {
     // 1. Request ChittyID for the new user
-    const chittyIDClient = new ChittyIDClient(env);
-    const userChittyID = await chittyIDClient.requestChittyID({
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
+    const userChittyID = await chittyIDClient.mint({
       entity: "PEO", // Person
       name: name,
       metadata: { email, app_origin },
@@ -583,12 +595,15 @@ app.post("/v1/mcp/portal/authenticate", async (c) => {
     const identity = await identityResponse.json();
 
     // Request ChittyID for the authenticated user if not exists
-    const chittyIDClient = new ChittyIDClient(env);
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
     let userChittyID = await env.AUTH_USERS.get(`cf_email:${identity.email}`);
 
     if (!userChittyID) {
       // Create new ChittyID for CF Access user
-      userChittyID = await chittyIDClient.requestChittyID({
+      userChittyID = await chittyIDClient.mint({
         entity: "PEO",
         name: identity.name || identity.email,
         metadata: {
@@ -652,10 +667,13 @@ app.post("/v1/mcp/linked-app/oauth", async (c) => {
 
   try {
     // Verify ChittyID
-    const chittyIDClient = new ChittyIDClient(env);
-    const isValid = await chittyIDClient.verify(chitty_id);
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
+    const validationResult = await chittyIDClient.validate(chitty_id);
 
-    if (!isValid) {
+    if (!validationResult.valid) {
       return c.json(
         {
           authorized: false,
@@ -802,10 +820,13 @@ app.post("/v1/mcp/authenticate", async (c) => {
 
   try {
     // Verify ChittyID
-    const chittyIDClient = new ChittyIDClient(env);
-    const isValid = await chittyIDClient.verify(chitty_id);
+    const chittyIDClient = new ChittyIDClient({
+      serviceUrl: env.CHITTYID_SERVICE_URL || "https://id.chitty.cc/v1",
+      apiKey: env.CHITTYID_API_KEY,
+    });
+    const validationResult = await chittyIDClient.validate(chitty_id);
 
-    if (!isValid) {
+    if (!validationResult.valid) {
       return c.json({ authenticated: false, error: "Invalid ChittyID" }, 401);
     }
 

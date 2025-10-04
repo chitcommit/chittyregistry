@@ -105,9 +105,27 @@ export class ChittyIDClient {
   validateFormat(chittyId: string): boolean {
     // VV = 2-letter version, G = generation, LLL = 3-letter location
     // SSSS = 4-digit sequence, T = type, YM = year-month, C = category, X = checksum
-    const pattern =
+    const officialPattern =
       /^[A-Z]{2}-[A-Z]-[A-Z]{3}-[0-9]{4}-[A-Z]-[0-9]{2}-[A-Z]-[0-9A-Z]$/;
-    return pattern.test(chittyId);
+
+    if (officialPattern.test(chittyId)) {
+      return true;
+    }
+
+    // DEPRECATED: Legacy format support (will be removed in v2.0)
+    // Old Format: CHITTY-ENTITY-SEQUENCE-CHECKSUM
+    const legacyPattern = /^CHITTY-[A-Z]+-[A-Z0-9]+-[A-Z0-9]+$/;
+    if (legacyPattern.test(chittyId)) {
+      console.warn(
+        `⚠️ DEPRECATED ChittyID format: "${chittyId}". ` +
+          `Update to VV-G-LLL-SSSS-T-YM-C-X format. ` +
+          `Legacy support ends in v2.0. ` +
+          `Update: npm install @chittyos/chittyid-client@latest`,
+      );
+      return true;
+    }
+
+    return false;
   }
 
   /**
