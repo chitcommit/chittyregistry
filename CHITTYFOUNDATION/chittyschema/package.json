@@ -55,6 +55,7 @@
     "registry:sync": "tsx -e \"import { ChittyOSServiceRegistry } from './src/platforms/macos/core/service-registry.js'; const registry = ChittyOSServiceRegistry.getInstance(); await registry.initializeWithRegistry(); console.log('Registry sync completed');\""
   },
   "dependencies": {
+    "@chittyos/chittyid-client": "^1.0.0",
     "@cloudflare/agents": "^0.0.16",
     "@jest/globals": "^30.2.0",
     "@modelcontextprotocol/sdk": "^1.19.1",

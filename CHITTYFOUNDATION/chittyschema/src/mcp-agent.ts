@@ -11,7 +11,7 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { chittyId, isValidChittyId, extractNamespace } from "./lib/chittyid";
+import { ChittyIDClient } from "@chittyos/chittyid-client";
 import { ingestEvidence } from "./routes/service-orchestrated-evidence";
 import { createCase, getCaseById } from "./routes/cases";
 import { createFact, getFactsByCase } from "./routes/facts";
@@ -59,6 +59,7 @@ export class ChittySchemaMCP extends McpAgent {
   // Authentication integration
   private authClient: ChittyAuthClient;
   private authMiddleware: MCPAuthMiddleware;
+  private chittyIdClient: ChittyIDClient;
 
   constructor(env?: any) {
     super();
@@ -77,6 +78,12 @@ export class ChittySchemaMCP extends McpAgent {
     });
 
     this.authMiddleware = new MCPAuthMiddleware(this.authClient);
+
+    // Initialize ChittyID client using published npm package
+    this.chittyIdClient = new ChittyIDClient({
+      serviceUrl: env?.CHITTYID_FOUNDATION_URL || "https://id.chitty.cc",
+      apiKey: env?.CHITTY_ID_TOKEN || "",
+    });
   }
 
   // Initial state
@@ -117,14 +124,18 @@ export class ChittySchemaMCP extends McpAgent {
         input: z.string().describe("Unique identifier for the entity"),
       },
       async ({ namespace, input }) => {
-        // Just call the existing chittyId function - it handles everything
+        // Use published @chittyos/chittyid-client package
         try {
-          const id = await chittyId(namespace, input);
+          const result = await this.chittyIdClient.mint({
+            entityType: namespace,
+            metadata: { input },
+          });
+
           return {
             content: [
               {
                 type: "text",
-                text: `ChittyID from Foundation: ${id}`,
+                text: `ChittyID from Foundation: ${result.chittyId}`,
               },
             ],
           };
@@ -133,7 +144,7 @@ export class ChittySchemaMCP extends McpAgent {
             content: [
               {
                 type: "text",
-                text: `Foundation service error: ${error.message}`,
+                text: `Foundation service error: ${error instanceof Error ? error.message : String(error)}`,
               },
             ],
           };
@@ -163,19 +174,29 @@ export class ChittySchemaMCP extends McpAgent {
           };
         }
 
-        const isValid = await isValidChittyId(id);
-        const namespace = extractNamespace(id);
+        try {
+          const validation = await this.chittyIdClient.validate(id);
 
-        return {
-          content: [
-            {
-              type: "text",
-              text: isValid
-                ? `✅ Valid ChittyID (Official format). Namespace: ${namespace}`
-                : `❌ Invalid ChittyID. Must use official VV-G-LLL-SSSS-T-YM-C-X format`,
-            },
-          ],
-        };
+          return {
+            content: [
+              {
+                type: "text",
+                text: validation.valid
+                  ? `✅ Valid ChittyID (Official format). Entity: ${validation.entityType}`
+                  : `❌ Invalid ChittyID. Must use official VV-G-LLL-SSSS-T-YM-C-X format`,
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Validation error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+          };
+        }
       },
     );
 
