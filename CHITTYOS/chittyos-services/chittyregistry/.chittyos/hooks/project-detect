@@ -1,0 +1,28 @@
+#!/bin/bash
+# ChittyOS Project Detection Hook
+# Prevents Universal Intake System "no project" errors
+
+export CHITTYOS_PROJECT_DETECTED=true
+export CHITTYOS_PROJECT_TYPE="chittyos-service"
+export CHITTYOS_PROJECT_NAME="chittyos-registry"
+export CHITTYOS_PROJECT_CONFIDENCE=85
+
+# Project information for Universal Intake System
+echo "📁 ChittyOS Project: chittyos-registry"
+echo "🔧 Type: chittyos-service"
+echo "🌟 Features: Service Registry, AI Orchestration, Context Bridge, QA Framework, Cloudflare Workers"
+echo "📊 Confidence: 85%"
+
+# Ensure Universal Intake System recognizes this as a ChittyOS project
+if [ "$1" = "--json" ]; then
+  cat << EOF
+{
+  "detected": true,
+  "name": "chittyos-registry",
+  "type": "chittyos-service",
+  "confidence": 85,
+  "features": ["Service Registry", "AI Orchestration", "Context Bridge", "QA Framework", "Cloudflare Workers"],
+  "path": "$(pwd)"
+}
+EOF
+fi

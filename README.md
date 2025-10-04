@@ -1,5 +1,25 @@
 # 🚦 ChittyOS Orchestrator Hub
 
+## 📖 ESSENTIAL DOCUMENTATION
+
+### 🤖 For AI Assistants (Claude, Cursor, Copilot, ChatGPT, etc.)
+**→ [AI-ASSISTANTS.md](AI-ASSISTANTS.md)** - **REQUIRED READING** - Universal guide for ALL AI tools
+
+### 📚 For Developers & Contributors
+**→ [Documentation Index](CHITTYCORP/documentation/INDEX.md)** - Complete documentation hub
+**→ [CLAUDE.md](CLAUDE.md)** - Project-specific AI guidance
+
+### ⚠️ Critical Rules
+**→ [STRUCTURE-LOCK.md](STRUCTURE-LOCK.md)** - DO NOT reorganize (structure is intentional)
+
+## 🗺️ Architecture Map
+
+- **Foundation Standards** → `CHITTYFOUNDATION/` (see [FOUNDATION-SERVICES-DECISION.md](FOUNDATION-SERVICES-DECISION.md) and [REGISTRY-PLACEMENT-DECISION.md](REGISTRY-PLACEMENT-DECISION.md))
+- **Runtime Services** → Host-level directories documented in [SERVICE-DIRECTORIES-ANALYSIS.md](SERVICE-DIRECTORIES-ANALYSIS.md) (`~/.chittyos`, `~/.chittychat`, `~/.chittyid`)
+- **Development Consolidation** → `/Users/nb/dev/` layout in [Development/active/dev/CHITTYOS_UNIFIED_ARCHITECTURE.md](Development/active/dev/CHITTYOS_UNIFIED_ARCHITECTURE.md)
+- **Data Lake & Symlinks** → [ChittyOS-Local/ARCHITECTURE.md](ChittyOS-Local/ARCHITECTURE.md)
+- **Domain Architectures** → Service-specific docs (for example [FURNISHED-CONDOS/chittyrental/docs/ARCHITECTURE.md](FURNISHED-CONDOS/chittyrental/docs/ARCHITECTURE.md))
+
 ## 🎛️ ChittyOS Orchestrator Functions
 
 This is the **orchestrator control center** - you can:
@@ -160,6 +180,8 @@ ChittyOS Orchestrator Hub (YOU ARE HERE)
     ├── 🧹 chittycleaner/   → Cleanup utilities
     └── 🔧 system/          → System tools
 ```
+
+Runtime infrastructure for these services is deployed under the host-level directories described in [SERVICE-DIRECTORIES-ANALYSIS.md](SERVICE-DIRECTORIES-ANALYSIS.md).
 
 ---
 

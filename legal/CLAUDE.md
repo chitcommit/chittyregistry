@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **Legal Technology Workspace** integrating ChittyOS Framework for comprehensive case management, evidence processing, and attorney onboarding. The repository handles multiple active legal matters with automated document extraction, blockchain verification through ChittyID, and PostgreSQL-based evidence ledgers.
 
+## ⚠️ CRITICAL POLICY ⚠️
+
+**VAULT-ONLY RULE:** Never use files directly from shared drives or unverified sources. ALL evidence must flow through the ChittyID intake pipeline to the ChittyOS-Data vault BEFORE use. The vault is THE ONLY source of truth. See [VAULT-ONLY-POLICY.md](VAULT-ONLY-POLICY.md).
+
 ## Essential Commands
 
 ### ChittyOS Integration (EXECUTE IMMEDIATELY)
@@ -14,6 +18,7 @@ This is a **Legal Technology Workspace** integrating ChittyOS Framework for comp
 /status            # Check system and evidence processing status
 /deploy            # Deploy to ChittyOS evidence platform
 /commit            # Commit with ChittyID for chain of custody
+/notebooklm        # NotebookLM sync status and management
 ```
 
 ### Case-Specific Operations
@@ -41,6 +46,16 @@ cd guzman/onboarding/
 # Documents organized in extracted/ and documents/ directories
 ```
 
+**NotebookLM Integration**:
+```bash
+cd notebooklm/
+./notebooklm-curate.sh add bianchi evidence /path/to/doc.pdf   # Add file to NotebookLM
+./notebooklm-curate.sh list bianchi                            # List curated files
+./notebooklm-curate.sh sync bianchi                            # Sync to Google Drive
+/notebooklm status                                             # Show sync status
+/notebooklm sync-all                                           # Sync all cases
+```
+
 ## Architecture Overview
 
 ### Legal Case Management System
@@ -59,6 +74,7 @@ The repository implements a three-tier legal technology architecture:
    - Universal Intake client document processing
    - ChittyChain blockchain verification
    - ChittyChronicle case narratives and research
+   - **NotebookLM** selective document sync for AI-powered case analysis
 
 3. **Attorney Onboarding Automation**
    - Automated document extraction from 6+ platforms

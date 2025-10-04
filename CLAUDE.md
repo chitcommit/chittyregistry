@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ CRITICAL: STRUCTURE PRESERVATION ⚠️
+
+**DO NOT REORGANIZE THIS PROJECT**.
+
+### Required Reading:
+- [AI-ASSISTANTS.md](AI-ASSISTANTS.md) - Universal guide for ALL AI tools
+- [STRUCTURE-LOCK.md](STRUCTURE-LOCK.md) - Structure enforcement rules
+- [Documentation Index](CHITTYCORP/documentation/INDEX.md) - Complete documentation
+
+The existing directory structure is INTENTIONAL and MUST BE PRESERVED.
+- NEVER create new organizational patterns
+- ALWAYS work within existing directories
+- ASK before creating any new structure
+
 ## Project Overview
 
 This is the **ChittyOS Framework Core Repository** - the central orchestration point for a comprehensive ecosystem of 34+ interconnected services, tools, and applications. The repository serves as the development workspace and deployment coordination center for the entire ChittyOS platform, which spans AI connectors, identity management, legal technology, and enterprise automation.

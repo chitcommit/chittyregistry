@@ -1,0 +1,276 @@
+# Enhanced Cloudflare Workers Configuration for ChittyRegistry with AI Integration
+# Incorporates ChittyChat's comprehensive AI deployment patterns
+
+name = "chittyregistry"
+main = "src/worker.js"
+compatibility_date = "2024-09-19"
+compatibility_flags = ["nodejs_compat"]
+
+# Main registry environment
+[env.production]
+name = "chittyregistry-production"
+route = "registry.chitty.cc/*"
+
+# AI Gateway environment for ChittyOS AI orchestration
+[env.ai-gateway]
+name = "chittyregistry-ai-gateway"
+route = "ai.chitty.cc/*"
+main = "src/ai-gateway-worker.js"
+
+# LangChain Agent environment for multi-agent orchestration
+[env.langchain]
+name = "chittyregistry-langchain"
+route = "langchain.chitty.cc/*"
+main = "src/langchain-worker.js"
+
+# MCP Agent environment for stateful AI interactions
+[env.mcp]
+name = "chittyregistry-mcp"
+route = "mcp.chitty.cc/*"
+main = "src/mcp-worker.js"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+SERVICE_NAME = "chittyregistry"
+VERSION = "1.0.0"
+CHITTY_DOMAIN = "chitty.cc"
+REGISTRY_DOMAIN = "registry.chitty.cc"
+AI_GATEWAY_DOMAIN = "ai.chitty.cc"
+LANGCHAIN_DOMAIN = "langchain.chitty.cc"
+MCP_DOMAIN = "mcp.chitty.cc"
+
+# KV Namespaces for caching and session storage
+[[kv_namespaces]]
+binding = "REGISTRY_CACHE"
+id = "registry_cache_production"
+preview_id = "registry_cache_preview"
+
+[[kv_namespaces]]
+binding = "AI_SESSIONS"
+id = "ai_sessions_production"
+preview_id = "ai_sessions_preview"
+
+[[kv_namespaces]]
+binding = "MCP_STATE"
+id = "mcp_state_production"
+preview_id = "mcp_state_preview"
+
+[[kv_namespaces]]
+binding = "VECTORIZE_INDEX"
+id = "vectorize_index_production"
+preview_id = "vectorize_index_preview"
+
+# Vectorize indexes for AI vector operations
+[[vectorize]]
+binding = "CHITTY_EMBEDDINGS"
+index_name = "chitty-service-embeddings"
+dimensions = 1536
+metric = "cosine"
+
+[[vectorize]]
+binding = "CHAT_EMBEDDINGS"
+index_name = "chitty-chat-embeddings"
+dimensions = 1536
+metric = "cosine"
+
+[[vectorize]]
+binding = "KNOWLEDGE_BASE"
+index_name = "chitty-knowledge-base"
+dimensions = 1536
+metric = "cosine"
+
+# Durable Objects for stateful AI agents
+[[durable_objects.bindings]]
+name = "MCP_AGENT"
+class_name = "MCPAgent"
+
+[[durable_objects.bindings]]
+name = "AI_GATEWAY"
+class_name = "AIGateway"
+
+[[durable_objects.bindings]]
+name = "LANGCHAIN_ORCHESTRATOR"
+class_name = "LangChainOrchestrator"
+
+# Durable Object migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["MCPAgent", "AIGateway", "LangChainOrchestrator"]
+
+# Hyperdrive for accelerated database connections
+[[hyperdrive]]
+binding = "NEON_DB"
+id = "neon-hyperdrive-production"
+
+# AI Gateway configuration
+[ai]
+binding = "AI"
+
+# Workflows for orchestrating complex AI tasks
+[[workflows]]
+binding = "AI_WORKFLOWS"
+class_name = "AIWorkflows"
+
+# Browser rendering for dynamic content generation
+[browser]
+binding = "BROWSER"
+
+# Queue for asynchronous AI processing
+[[queues.producers]]
+queue = "ai-processing-queue"
+binding = "AI_QUEUE"
+
+[[queues.consumers]]
+queue = "ai-processing-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "ai-dlq"
+
+# Analytics Engine for AI metrics
+[[analytics_engine_datasets]]
+binding = "AI_ANALYTICS"
+
+# R2 storage for AI model artifacts and embeddings
+[[r2_buckets]]
+binding = "AI_MODELS"
+bucket_name = "chitty-ai-models"
+
+[[r2_buckets]]
+binding = "VECTOR_STORAGE"
+bucket_name = "chitty-vector-storage"
+
+# D1 database for local AI metadata
+[[d1_databases]]
+binding = "AI_METADATA"
+database_name = "chitty-ai-metadata"
+database_id = "ai-metadata-production"
+
+# Secrets configuration (set via wrangler secret put)
+# NEON_DATABASE_URL - Neon PostgreSQL connection string
+# REDIS_URL - Redis connection for caching
+# OPENAI_API_KEY - OpenAI API key for fallback
+# ANTHROPIC_API_KEY - Anthropic API key for advanced reasoning
+# CHITTY_JWT_SECRET - JWT secret for authentication
+# CLOUDFLARE_AI_GATEWAY_TOKEN - AI Gateway authentication
+
+# Workers AI binding for edge inference
+[ai]
+binding = "AI"
+
+# Custom domains configuration
+[[routes]]
+pattern = "registry.chitty.cc/*"
+zone_name = "chitty.cc"
+
+[[routes]]
+pattern = "ai.chitty.cc/*"
+zone_name = "chitty.cc"
+
+[[routes]]
+pattern = "langchain.chitty.cc/*"
+zone_name = "chitty.cc"
+
+[[routes]]
+pattern = "mcp.chitty.cc/*"
+zone_name = "chitty.cc"
+
+# Placement configuration for optimal performance
+[placement]
+mode = "smart"
+
+# Build configuration
+[build]
+command = "npm run build:cloudflare"
+upload.format = "service-worker"
+
+# Development configuration
+[dev]
+port = 8787
+local_protocol = "https"
+upstream_protocol = "https"
+
+# Limits and scaling
+[limits]
+cpu_ms = 30000
+memory_mb = 128
+
+# Feature flags for AI capabilities
+[experimental]
+local_development_with_ai = true
+vectorize_alpha = true
+workflows_alpha = true
+browser_alpha = true
+
+# Compatibility settings for AI features
+compatibility_flags = [
+  "nodejs_compat",
+  "streams_enable_constructors",
+  "transformstream_enable_standard_constructor",
+  "ai_api_beta",
+  "vectorize_beta",
+  "workflows_beta"
+]
+
+# Module rules for AI dependencies
+[[rules]]
+type = "ESModule"
+globs = ["**/*.js", "**/*.mjs"]
+
+[[rules]]
+type = "CommonJS"
+globs = ["**/*.cjs"]
+
+# Observability and monitoring
+[observability]
+enabled = true
+head_sampling_rate = 0.1
+
+# Service bindings for inter-service communication
+[[services]]
+binding = "CHITTY_AUTH"
+service = "chittyauth"
+
+[[services]]
+binding = "CHITTY_SCHEMA"
+service = "chittyschema"
+
+[[services]]
+binding = "CHITTY_CANON"
+service = "chittycanon"
+
+[[services]]
+binding = "CHITTY_TRUST"
+service = "chittytrust"
+
+# Environment-specific overrides
+[env.ai-gateway.ai]
+binding = "AI_GATEWAY"
+
+[env.langchain.ai]
+binding = "LANGCHAIN_AI"
+
+[env.mcp.ai]
+binding = "MCP_AI"
+
+# AI Gateway specific configuration
+[env.ai-gateway.vars]
+AI_GATEWAY_ENDPOINT = "https://gateway.ai.cloudflare.com"
+FALLBACK_MODEL = "gpt-3.5-turbo"
+CACHE_TTL = "3600"
+RATE_LIMIT = "1000"
+
+# LangChain specific configuration
+[env.langchain.vars]
+LANGCHAIN_MODEL = "@cf/meta/llama-2-7b-chat-int8"
+REACT_AGENT_TIMEOUT = "30000"
+RAG_CHUNK_SIZE = "1000"
+MULTI_AGENT_MAX_WORKERS = "5"
+
+# MCP specific configuration
+[env.mcp.vars]
+MCP_PROTOCOL_VERSION = "1.0"
+STATE_PERSISTENCE = "true"
+SESSION_TIMEOUT = "7200"
+ORCHESTRATION_PATTERNS = "chaining,routing,parallelization,orchestration,evaluation"

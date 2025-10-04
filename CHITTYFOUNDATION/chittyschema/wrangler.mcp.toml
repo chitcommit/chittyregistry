@@ -151,6 +151,4 @@ mode = "smart"
 # NOTION_TOKEN - Notion API token for sync operations
 # OPENAI_API_KEY - Optional OpenAI API key for enhanced AI operations
 
-# Production secrets via 1Password
-[env.production.vars]
-CHITTY_ID_TOKEN_REF = "op://Private/gxyne23yqngvk2nzjwl62uakx4/ChittyCorp LLC/global_api_key"
+# Production secrets via 1Password (consolidated into main production vars section above)

@@ -1,23 +1,36 @@
 name = "chittyregistry"
 main = "src/universal-registry-worker.js"
 compatibility_date = "2024-01-01"
-account_id = "84f0f32886f1d6196380fe6cbe9656a8"
+account_id = "0bc21e3a5a9de1a4cc843be9c3e98121"
 
 [env.staging]
 name = "chittyregistry-staging"
 main = "src/universal-registry-worker.js"
-vars = { SERVICE_NAME = "chittyregistry-universal-staging", SERVICE_VERSION = "2.0.0-staging", CHITTYOS_ENVIRONMENT = "staging" }
+vars = { SERVICE_NAME = "chittyregistry-universal-staging", SERVICE_VERSION = "2.0.0-staging", CHITTYOS_ENVIRONMENT = "staging", REGISTRY_BASE_PATH = "/Users/nb/.claude/projects/-", CHITTYCHAT_INTEGRATION = "enabled" }
+
+[[env.staging.kv_namespaces]]
+binding = "REGISTRY_CACHE"
+id = "58649f33726646d8b8c44befd4140947"
+
+[[env.staging.kv_namespaces]]
+binding = "REGISTRY_STORE"
+id = "b4518a6db20640ea990099f6e8497771"
 
 [env.production]
 name = "chittyregistry-production"
 main = "src/universal-registry-worker.js"
+vars = { SERVICE_NAME = "chittyregistry-universal", SERVICE_VERSION = "2.0.0", CHITTYOS_ENVIRONMENT = "production", REGISTRY_BASE_PATH = "/Users/nb/.claude/projects/-", CHITTYCHAT_INTEGRATION = "enabled" }
 
-[[routes]]
+[[env.production.kv_namespaces]]
+binding = "REGISTRY_CACHE"
+id = "58649f33726646d8b8c44befd4140947"
+
+[[env.production.kv_namespaces]]
+binding = "REGISTRY_STORE"
+id = "b4518a6db20640ea990099f6e8497771"
+
+[[env.production.routes]]
 pattern = "registry.chitty.cc/*"
-zone_name = "chitty.cc"
-
-[[routes]]
-pattern = "chitty.cc/registry/*"
 zone_name = "chitty.cc"
 
 [vars]
@@ -29,8 +42,8 @@ CHITTYCHAT_INTEGRATION = "enabled"
 
 [[kv_namespaces]]
 binding = "REGISTRY_CACHE"
-id = "64fff42296334991bb4308f3482fdd4d"
+id = "58649f33726646d8b8c44befd4140947"
 
 [[kv_namespaces]]
 binding = "REGISTRY_STORE"
-id = "8d68622f5cc742a3a98d7ee3b09f903d"
+id = "b4518a6db20640ea990099f6e8497771"
